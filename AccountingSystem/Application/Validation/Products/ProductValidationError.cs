@@ -3,7 +3,6 @@
     EmptyName,
     NameTooLong,
     DuplicateName,
-    EmptyPrice,
     InvalidPrice,
     EmptyCategory,
     CategoryTooLong,

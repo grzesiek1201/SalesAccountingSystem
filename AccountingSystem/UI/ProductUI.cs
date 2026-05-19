@@ -12,7 +12,7 @@ namespace AccountingSystem.UI
 
         public ProductUI(ProductService ProductService)
         {
-            _productService = productService;
+            _productService = ProductService;
         }
 
         public void AddProductFlow()
@@ -35,22 +35,58 @@ namespace AccountingSystem.UI
 
         public void EditProductFlow()
         {
+            Console.WriteLine("To edit prodiuct just fill fields below. If there is a product matching your Id, data will change");
 
-        }
-
-        public void ArchiveProductFlow()
-        {
-
-        }
-
-        public void FindProductFlow()
-        {
-
+            var product = GetProductInput();
+            _productService.EditProduct(product);
         }
 
         public void GetAllProductsFlow()
         {
+            List<Product> products = _productService.GetAllProducts();
 
+            foreach (var c in products)
+            {
+                Console.WriteLine(
+                    $"Name: {c.Name}, Id: {c.Id}, Price: {c.Price},\n" +
+                    $"Category Id: {c.Category.Id}, Name: {c.Category.Name}"
+                );
+            }
+        }
+
+        public void FindProductFlow()
+        {
+            int idSearch = GetProductId();
+
+            var result = _productService.FindProduct(idSearch);
+
+            if (result != null)
+            {
+                Console.WriteLine(
+                    $"Name: {result.Name}, Id: {result.Id}, Price: {result.Price},\n" +
+                    $"Category Id: {result.Category.Id}, Category name: {result.Category.Name},\n" 
+                );
+            }
+            else
+            {
+                Console.WriteLine("Product not found. Try again");
+            }
+        }
+
+        public void ArchiveProductFlow()
+        {
+            int id = GetProductId();
+
+            var result = _productService.ArchiveProduct(id);
+
+            if (result == Domain.Enums.ArchiveProductResult.NotFound)
+            {
+                Console.WriteLine("Product is not found. Try again");
+            }
+            else if (result == Domain.Enums.ArchiveProductResult.Success)
+            {
+                Console.WriteLine("Product has been archived.");
+            }
         }
 
         public Product GetProductInput()
@@ -67,7 +103,6 @@ namespace AccountingSystem.UI
 
             var category = new Category
             {
-                Id = nextId,
                 Name = group
             };
 
@@ -76,6 +111,28 @@ namespace AccountingSystem.UI
                 Name = name,
                 Price = priceValue,
                 Category = category
+            };
+        }
+
+        public int GetProductId()
+        {
+            Console.Write("Type product ID: ");
+            return Convert.ToInt32(Console.ReadLine());
+        }
+
+        private string GetPrductErrorMessage(ProductValidationError error)
+        {
+            return error switch
+            {
+                ProductValidationError.EmptyName => "Name is empty",
+                ProductValidationError.NameTooLong => "Name is too long",
+                ProductValidationError.DuplicateName => "Name is duplicated",
+                ProductValidationError.InvalidPrice => "Price is invalid",
+                ProductValidationError.EmptyCategory => "Category name is empty",
+                ProductValidationError.CategoryTooLong => "Category name is too long",
+                ProductValidationError.DuplicateCategory => "Category name is duplicated",
+
+                _ => "Unknown error"
             };
         }
 

@@ -54,7 +54,7 @@ namespace AccountingSystem.Application.Services
             if (existing.IsProductArchived)
                 return Domain.Enums.ProductEditResult.ProductArchived;
 
-            var otherProducts = product.Where(x => x.Id != product.Id).ToList();
+            var otherProducts = products.Where(x => x.Id != product.Id).ToList();
             var result = _validator.Validate(product, otherProducts);
 
             if (!result.IsValid)
@@ -92,7 +92,7 @@ namespace AccountingSystem.Application.Services
             {
                 return Domain.Enums.ArchiveProductResult.NotFound;
             }
-            existing.IsArchived = true;
+            existing.IsProductArchived = true;
             return Domain.Enums.ArchiveProductResult.Success;
         }
     }

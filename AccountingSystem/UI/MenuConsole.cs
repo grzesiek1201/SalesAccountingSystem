@@ -1,5 +1,6 @@
 ﻿using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Customers;
+using AccountingSystem.Application.Validation.Products;
 using AccountingSystem.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace AccountingSystem.UI
 
             while (isActiveMainMenu)
             {
-                Console.WriteLine("1- Go to Customers Menu, 2- Go to Invoice Menu, 3- Go to Order Menu, 4- Go to Quantation Menu, 5- Go to Payment menu,\n s - to save, q -  to save and quit");
+                Console.WriteLine("1- Go to Customers Menu 2- Go to Product Menu, 3- Go to Invoice Menu, 4- Go to Order Menu, 5- Go to Quantation Menu, 6- Go to Payment menu,\n s - to save, q -  to save and quit");
                 Console.Write("Type your option: ");
                 string inputChoiceMenu = Console.ReadLine();
                 switch (inputChoiceMenu.Trim().ToLower())
@@ -26,18 +27,22 @@ namespace AccountingSystem.UI
                         break;
 
                     case "2":
-                        InvoiceMenu();
+                        ProductMenu();
                         break;
 
                     case "3":
-                        OrderMenu();
+                        InvoiceMenu();
                         break;
 
                     case "4":
-                        QuantationMenu();
+                        OrderMenu();
                         break;
 
                     case "5":
+                        QuantationMenu();
+                        break;
+
+                    case "6":
                         PaymentMenu();
                         break;
 
