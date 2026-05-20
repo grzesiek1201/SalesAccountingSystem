@@ -4,6 +4,7 @@
     NameTooLong,
     DuplicateName,
     InvalidPrice,
+    EmptyPrice,
     EmptyCategory,
     CategoryTooLong,
     DuplicateCategory,

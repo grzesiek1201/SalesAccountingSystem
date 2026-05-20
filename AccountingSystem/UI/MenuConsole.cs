@@ -17,6 +17,7 @@ namespace AccountingSystem.UI
 
             while (isActiveMainMenu)
             {
+                Console.WriteLine("MAIN MENU");
                 Console.WriteLine("1- Go to Customers Menu 2- Go to Product Menu, 3- Go to Invoice Menu, 4- Go to Order Menu, 5- Go to Quantation Menu, 6- Go to Payment menu,\n s - to save, q -  to save and quit");
                 Console.Write("Type your option: ");
                 string inputChoiceMenu = Console.ReadLine();
@@ -39,7 +40,7 @@ namespace AccountingSystem.UI
                         break;
 
                     case "5":
-                        QuantationMenu();
+                        QuotationMenu();
                         break;
 
                     case "6":
@@ -176,10 +177,49 @@ namespace AccountingSystem.UI
 
         }
 
-        public void QuantationMenu()
+        public void QuotationMenu()
         {
+            bool isQuotationMenuActive = true;
+            var validator = new QuotationValidator();
+            var quotationService = new QuotationService(validator);
+            var quotationUI = new ProductUI(quotationtService);
+            while (isQuotationMenuActive)
+            {
+                Console.WriteLine("QUOTATION MENU");
+                Console.WriteLine("1- to add quotation, 2- to edit quotation, 3- to archive quotation,4- to search quotation by ID, 5- to show all quotations, r- to return to main menu");
+                Console.Write("Type your option: ");
+                string inputChoiceQuotation = Console.ReadLine();
+                switch (inputChoiceQuotation.Trim().ToLower())
+                {
+                    case "1":
+                        quotationUI.AddQuotationFlow();
+                        break;
 
-        }
+                    case "2":
+                        quotationUI.EditQuotationFlow();
+                        break;
+
+                    case "3":
+                        quotationUI.ArchiveQuotationFlow();
+                        break;
+
+                    case "4":
+                        quotationUI.FindQuotationFlow();
+                        break;
+
+                    case "5":
+                        quotationUI.GetAllQuotationsFlow();
+                        break;
+
+                    case "r":
+                        isQuotationMenuActive = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid input. Try again");
+                        break;
+                }
+            }
 
         public void PaymentMenu()
         {
