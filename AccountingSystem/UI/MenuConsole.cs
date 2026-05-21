@@ -1,11 +1,8 @@
 ﻿using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Customers;
 using AccountingSystem.Application.Validation.Products;
-using AccountingSystem.Domain.Entities;
+using AccountingSystem.Application.Validation.Quotations;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Linq;
 
 namespace AccountingSystem.UI
 {
@@ -18,10 +15,12 @@ namespace AccountingSystem.UI
             while (isActiveMainMenu)
             {
                 Console.WriteLine("MAIN MENU");
-                Console.WriteLine("1- Go to Customers Menu 2- Go to Product Menu, 3- Go to Invoice Menu, 4- Go to Order Menu, 5- Go to Quantation Menu, 6- Go to Payment menu,\n s - to save, q -  to save and quit");
-                Console.Write("Type your option: ");
-                string inputChoiceMenu = Console.ReadLine();
-                switch (inputChoiceMenu.Trim().ToLower())
+                Console.WriteLine("1- Customers, 2- Products, 3- Invoice, 4- Order, 5- Quotation, 6- Payment, s - save, q - quit");
+                Console.Write("Type option: ");
+
+                string input = Console.ReadLine();
+
+                switch (input.Trim().ToLower())
                 {
                     case "1":
                         CustomerMenu();
@@ -47,17 +46,13 @@ namespace AccountingSystem.UI
                         PaymentMenu();
                         break;
 
-                    case "s":
-
-                        break;
-
                     case "q":
-                        Console.WriteLine("Saving data and quitting...");
+                        Console.WriteLine("Saving and quitting...");
                         isActiveMainMenu = false;
                         break;
 
                     default:
-                        Console.WriteLine("Invalid input. Try again");
+                        Console.WriteLine("Invalid input");
                         break;
                 }
             }
@@ -65,166 +60,99 @@ namespace AccountingSystem.UI
 
         public void CustomerMenu()
         {
-            bool isCustomerMenuActive = true;
-            var validator = new CustomerValidator();
-            var customerService = new CustomerService(validator);
+            var customerValidator = new CustomerValidator();
+            var customerService = new CustomerService(customerValidator);
             var customerUI = new CustomerUI(customerService);
 
-            while (isCustomerMenuActive)
+            bool active = true;
+
+            while (active)
             {
                 Console.WriteLine("CUSTOMER MENU");
-                Console.WriteLine("1- to add client, 2- to edit client, 3- to show all clients name, 4- to search a client by name or ID, 5- to archive client, r - to return to main menu");
-                Console.Write("Type your option: ");
-                string inputChoiceMenu = Console.ReadLine();
-                switch (inputChoiceMenu.Trim().ToLower())
+                Console.WriteLine("1- Add, 2- Edit, 3- List, 4- Find, 5- Archive, r - back");
+                string input = Console.ReadLine();
+
+                switch (input.Trim().ToLower())
                 {
-                    case "1":
-                        {
-                            customerUI.AddCustomerFlow();
-                        }
-                        break;
-
-                    case "2":
-                        {
-                            customerUI.EditCustomerFlow();
-
-                        }
-                        break;
-
-                    case "3":
-                        {
-                            customerUI.GetAllCustomerFlow();
-
-                        }
-                        break;
-
-                    case "4":
-                        {
-                            customerUI.FindCustomerFlow();
-                        }
-                        break;
-
-                    case "5":
-                        {
-                            customerUI.ArchiveCustomerFlow();
-                        }
-                        break;
-
-                    case "r":
-                        isCustomerMenuActive = false;
-                        break;
-
-                    default:
-                        Console.WriteLine("Invalid input. Try again");
-                        break;
+                    case "1": customerUI.AddCustomerFlow(); break;
+                    case "2": customerUI.EditCustomerFlow(); break;
+                    case "3": customerUI.GetAllCustomerFlow(); break;
+                    case "4": customerUI.FindCustomerFlow(); break;
+                    case "5": customerUI.ArchiveCustomerFlow(); break;
+                    case "r": active = false; break;
+                    default: Console.WriteLine("Invalid"); break;
                 }
-
             }
         }
 
         public void ProductMenu()
         {
-            bool isProductMenuActive = true;
-            var validator = new ProductValidator();
-            var productService = new ProductService(validator);
+            var productValidator = new ProductValidator();
+            var productService = new ProductService(productValidator);
             var productUI = new ProductUI(productService);
-            while (isProductMenuActive)
+
+            bool active = true;
+
+            while (active)
             {
                 Console.WriteLine("PRODUCT MENU");
-                Console.WriteLine("1- to add product, 2- to edit prodcut, 3- to archive product,4- to search product by ID, 5- to show all products, r- to return to main menu");
-                Console.Write("Type your option: ");
-                string inputChoiceProduct = Console.ReadLine();
-                switch (inputChoiceProduct.Trim().ToLower())
+                Console.WriteLine("1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, r - back");
+
+                string input = Console.ReadLine();
+
+                switch (input.Trim().ToLower())
                 {
-                    case "1":
-                        productUI.AddProductFlow();
-                        break;
-
-                    case "2":
-                        productUI.EditProductFlow();
-                        break;
-
-                    case "3":
-                        productUI.ArchiveProductFlow();
-                        break;
-
-                    case "4":
-                        productUI.FindProductFlow();
-                        break;
-
-                    case "5":
-                        productUI.GetAllProductsFlow();
-                        break;
-
-                    case "r":
-                        isProductMenuActive = false;
-                        break;
-
-                    default:
-                        Console.WriteLine("Invalid input. Try again");
-                        break;
+                    case "1": productUI.AddProductFlow(); break;
+                    case "2": productUI.EditProductFlow(); break;
+                    case "3": productUI.ArchiveProductFlow(); break;
+                    case "4": productUI.FindProductFlow(); break;
+                    case "5": productUI.GetAllProductsFlow(); break;
+                    case "r": active = false; break;
+                    default: Console.WriteLine("Invalid"); break;
                 }
             }
-            
-        }
-        public void InvoiceMenu()
-        {
-
-        }
-
-        public void OrderMenu()
-        {
-
         }
 
         public void QuotationMenu()
         {
-            bool isQuotationMenuActive = true;
-            var validator = new QuotationValidator();
-            var quotationService = new QuotationService(validator);
-            var quotationUI = new ProductUI(quotationtService);
-            while (isQuotationMenuActive)
+            var quotationValidator = new QuotationValidator();
+            var customerValidator = new CustomerValidator();
+            var productValidator = new ProductValidator();
+
+            var quotationService = new QuotationService(quotationValidator);
+            var customerService = new CustomerService(customerValidator);
+            var productService = new ProductService(productValidator);
+
+            var quotationUI = new QuotationUI(
+                quotationService,
+                customerService,
+                productService
+            );
+
+            bool active = true;
+
+            while (active)
             {
                 Console.WriteLine("QUOTATION MENU");
-                Console.WriteLine("1- to add quotation, 2- to edit quotation, 3- to archive quotation,4- to search quotation by ID, 5- to show all quotations, r- to return to main menu");
-                Console.Write("Type your option: ");
-                string inputChoiceQuotation = Console.ReadLine();
-                switch (inputChoiceQuotation.Trim().ToLower())
+                Console.WriteLine("1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, r - back");
+
+                string input = Console.ReadLine();
+
+                switch (input.Trim().ToLower())
                 {
-                    case "1":
-                        quotationUI.AddQuotationFlow();
-                        break;
-
-                    case "2":
-                        quotationUI.EditQuotationFlow();
-                        break;
-
-                    case "3":
-                        quotationUI.ArchiveQuotationFlow();
-                        break;
-
-                    case "4":
-                        quotationUI.FindQuotationFlow();
-                        break;
-
-                    case "5":
-                        quotationUI.GetAllQuotationsFlow();
-                        break;
-
-                    case "r":
-                        isQuotationMenuActive = false;
-                        break;
-
-                    default:
-                        Console.WriteLine("Invalid input. Try again");
-                        break;
+                    case "1": quotationUI.AddQuotationFlow(); break;
+                    case "2": quotationUI.EditQuotationFlow(); break;
+                    case "3": quotationUI.ArchiveQuotationFlow(); break;
+                    case "4": quotationUI.FindQuotationFlow(); break;
+                    case "5": quotationUI.GetAllQuotationsFlow(); break;
+                    case "r": active = false; break;
+                    default: Console.WriteLine("Invalid"); break;
                 }
             }
-
-        public void PaymentMenu()
-        {
-
         }
+
+        public void InvoiceMenu() { }
+        public void OrderMenu() { }
+        public void PaymentMenu() { }
     }
 }
-

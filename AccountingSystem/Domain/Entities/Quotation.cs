@@ -7,11 +7,13 @@ namespace AccountingSystem.Domain.Entities
     {
         public int Id { get; set; }
 
-        public string Status { get; set; }  
+        public string Status { get; set; }
 
         public DateTime DateCreated { get; set; }
 
         public Customer Customer { get; set; }
+
+        public bool IsQuotationArchived { get; set; }
 
         public List<QuotationItem> Items { get; set; } = new List<QuotationItem>();
     }
@@ -20,7 +22,11 @@ namespace AccountingSystem.Domain.Entities
     {
         public Product Product { get; set; }
 
+        public int Position { get; set; }
+
         public int Quantity { get; set; }
+
+        public decimal DiscountPercent { get; set; }
 
         public decimal UnitPrice { get; set; }
 
