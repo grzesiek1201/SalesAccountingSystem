@@ -2,14 +2,13 @@
 using AccountingSystem.Application.Validation.Quotations;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
-using AccountingSystem.UI;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace AccountingSystem.Application.Services
 {
-    internal class QuotationService
+    public class QuotationService
     {
         private List<Quotation> quotations = new List<Quotation>();
         public int nextId;
@@ -60,10 +59,8 @@ namespace AccountingSystem.Application.Services
             if (!result.IsValid)
                 return Domain.Enums.QuotationEditResult.InvalidData;
 
-            existing.Id = quotation.Id;
             existing.Status = quotation.Status;
             existing.Customer = quotation.Customer;
-            existing.IsQuotationArchived = quotation.IsQuotationArchived;
 
             return Domain.Enums.QuotationEditResult.Success;
         }
@@ -75,15 +72,7 @@ namespace AccountingSystem.Application.Services
 
         public Quotation FindQuotation(int Id)
         {
-            var existing = quotations.Find(x => x.Id == Id);
-            if (existing != null)
-            {
-                return existing;
-            }
-            else
-            {
-                return null;
-            }
+            return quotations.FirstOrDefault(x => x.Id == Id);
         }
 
         public Domain.Enums.ArchiveQuotationResult ArchiveQuotation(int Id)

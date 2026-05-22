@@ -4,12 +4,11 @@ using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 
 namespace AccountingSystem.Application.Services
 {
-    internal class CustomerService
+    public class CustomerService
     {
         private List<Customer> customers = new List<Customer>();
         public int nextId;
@@ -70,17 +69,9 @@ namespace AccountingSystem.Application.Services
             return customers;
         }
 
-        public Customer FindCustomer(int Id)
+        public Customer? FindCustomer(int Id)  
         {
-            var existing = customers.Find(x => x.Id == Id);
-            if (existing != null)
-            {
-                return existing;
-            }
-            else
-            {
-                return null;
-            }
+            return customers.FirstOrDefault(x => x.Id == Id);
         }
 
         public Domain.Enums.ArchiveCustomerResult ArchiveCustomer(int Id)

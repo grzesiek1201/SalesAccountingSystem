@@ -6,7 +6,7 @@ namespace AccountingSystem.Application.Validation.Quotations
 {
     internal class QuotationValidatorResult
     {
-        public List<QuotationValidationError> Errors { get; set; } = new List<QuotationValidationError>();
+        public List<QuotationValidatorError> Errors { get; set; } = new List<QuotationValidatorError>();
         public bool IsValid => Errors.Count == 0;
     }
 }

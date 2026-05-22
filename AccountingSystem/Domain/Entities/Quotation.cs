@@ -1,13 +1,14 @@
-﻿using System;
+﻿using AccountingSystem.Domain.Enums;
+using System;
 using System.Collections.Generic;
 
 namespace AccountingSystem.Domain.Entities
 {
-    internal class Quotation
+    public class Quotation
     {
         public int Id { get; set; }
 
-        public string Status { get; set; }
+        public QuotationStatus Status { get; set; }
 
         public DateTime DateCreated { get; set; }
 
@@ -18,7 +19,7 @@ namespace AccountingSystem.Domain.Entities
         public List<QuotationItem> Items { get; set; } = new List<QuotationItem>();
     }
 
-    internal class QuotationItem
+    public class QuotationItem
     {
         public Product Product { get; set; }
 

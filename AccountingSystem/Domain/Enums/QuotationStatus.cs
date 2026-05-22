@@ -8,7 +8,7 @@ namespace AccountingSystem.Domain.Enums
     {
         Active,
         Inactive,
-        canceled,
-        expired
+        Canceled,
+        Expired
     }
 }

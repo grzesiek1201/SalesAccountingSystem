@@ -2,14 +2,12 @@
 using AccountingSystem.Application.Validation.Products;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
-using AccountingSystem.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace AccountingSystem.Application.Services
 {
-    internal class ProductService
+    public class ProductService
     {
         private List<Product> products = new List<Product>();
         public int nextId;
@@ -74,15 +72,7 @@ namespace AccountingSystem.Application.Services
 
         public Product FindProduct(int Id)
         {
-            var existing = products.Find(x => x.Id == Id);
-            if (existing != null)
-            {
-                return existing;
-            }
-            else
-            {
-                return null;
-            }
+            return products.FirstOrDefault(x => x.Id == Id);
         }
 
         public Domain.Enums.ArchiveProductResult ArchiveProduct(int Id)
