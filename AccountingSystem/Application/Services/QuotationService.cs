@@ -8,7 +8,7 @@ using System.Text;
 
 namespace AccountingSystem.Application.Services
 {
-    public class QuotationService
+    internal class QuotationService
     {
         private List<Quotation> quotations = new List<Quotation>();
         public int nextId;

@@ -1,5 +1,6 @@
 ﻿using AccountingSystem.Application.Services;
 using AccountingSystem.Domain.Entities;
+using AccountingSystem.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -135,9 +136,14 @@ namespace AccountingSystem.UI
 
         public Quotation GetQuotationInput()
         {
-            Console.Write("Add customer id: ");
-
-            int customerId = int.Parse(Console.ReadLine());
+            int customerId;
+            while (true)
+            {
+                Console.Write("Add customer id: ");
+                if (int.TryParse(Console.ReadLine(), out customerId))
+                    break;
+                Console.Write("Invalid input, try again. ");
+            }
 
             Customer customer = _customerService.FindCustomer(customerId);
 
@@ -151,7 +157,7 @@ namespace AccountingSystem.UI
             {
                 Customer = customer,
                 DateCreated = DateTime.Now,
-                Status = "Active"
+                Status = QuotationStatus.Active
             };
 
             return quotation;
@@ -162,9 +168,11 @@ namespace AccountingSystem.UI
         {
             while (true)
             {
+                int productId;
                 Console.Write("Add product id (0 to finish): ");
-
-                int productId = int.Parse(Console.ReadLine());
+                if (int.TryParse(Console.ReadLine(), out productId))
+                    break;
+                Console.Write("Invalid input. Try again");
 
                 if (productId == 0)
                 {
@@ -180,10 +188,25 @@ namespace AccountingSystem.UI
                 }
 
                 Console.Write("Add quantity: ");
-                int quantity = int.Parse(Console.ReadLine());
+                int quantity;
+                while (true)
+                {
+                    Console.Write("Add quantity: ");
+                    if (int.TryParse(Console.ReadLine(), out quantity))
+                        break;
+
+                    Console.WriteLine("Wrong value, try again");
+                }
 
                 Console.Write("Add discount percent: ");
-                decimal discountPercent = decimal.Parse(Console.ReadLine());
+                decimal discountPercent;
+                while (true)
+                {
+                    Console.Write("Add discount percent: ");
+                    if (decimal.TryParse(Console.ReadLine(), out discountPercent))
+                        break;
+                    Console.WriteLine("Wrong value, try again");
+                } 
 
                 decimal unitPrice =
                     product.Price * (1 - discountPercent / 100m);
@@ -210,20 +233,22 @@ namespace AccountingSystem.UI
             return Convert.ToInt32(Console.ReadLine());
         }
 
-        private string GetQuotationErrorMessage(QuotationValidatorError error)
+        private string GetQuotationErrorMessage(QuotationValidationError error)
         {
             return error switch
             {
-                QuotationValidatorError.EmptyCustomer => "Customer is empty",
-                QuotationValidatorError.NoItems => "No items in quotation",
-                QuotationValidatorError.InvalidQuantity => "Quantity is invalid",
-                QuotationValidatorError.InvalidUnitPrice => "Unit price is invalid",
-                QuotationValidatorError.InvalidStatus => "Status is invalid",
-                QuotationValidatorError.InvalidDate => "Date is invalid",
-                QuotationValidatorError.DuplicateProduct => "Product is duplicated",
-                QuotationValidatorError.QuotationAlreadyAccepted => "Quatation is already accepted",
-                QuotationValidatorError.QuotationAlreadyRejected => "Quatation is already rejected",
-                QuotationValidatorError.QuotationAlreadyConvertedToOrder => "Quatation is already converted into order",
+                QuotationValidationError.EmptyCustomer => "Customer is empty",
+                QuotationValidationError.NoItems => "No items in quotation",
+                QuotationValidationError.InvalidQuantity => "Quantity is invalid",
+                QuotationValidationError.InvalidUnitPrice => "Unit price is invalid",
+                QuotationValidationError.InvalidStatus => "Status is invalid",
+                QuotationValidationError.InvalidDate => "Date is invalid",
+                QuotationValidationError.DuplicateProduct => "Product is duplicated",
+                QuotationValidationError.QuotationItemNull => "There is no products",
+                QuotationValidationError.EmptyProduct => "Product is empty",
+                QuotationValidationError.InvalidTotalAmount => "Total amount is invalid",
+                QuotationValidationError.ExpiredQuotation => "Quotation is expired",
+                QuotationValidationError.EmptyQuotationNumber => "Quotation number is empty",
                 _ => "Unknown error"
             };
         }

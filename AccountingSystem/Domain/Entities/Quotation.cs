@@ -7,6 +7,8 @@ namespace AccountingSystem.Domain.Entities
     public class Quotation
     {
         public int Id { get; set; }
+        
+        public string QuotationNumber { get; set; }
 
         public QuotationStatus Status { get; set; }
 
@@ -31,6 +33,7 @@ namespace AccountingSystem.Domain.Entities
 
         public decimal UnitPrice { get; set; }
 
-        public decimal Total => Quantity * UnitPrice;
+
+        public decimal Total => Quantity * UnitPrice * (1 - DiscountPercent / 100);
     }
 }

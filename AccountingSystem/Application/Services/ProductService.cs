@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace AccountingSystem.Application.Services
 {
-    public class ProductService
+    internal class ProductService
     {
         private List<Product> products = new List<Product>();
         public int nextId;

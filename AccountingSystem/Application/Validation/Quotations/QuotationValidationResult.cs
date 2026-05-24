@@ -4,9 +4,9 @@ using System.Text;
 
 namespace AccountingSystem.Application.Validation.Quotations
 {
-    internal class QuotationValidatorResult
+    internal class QuotationValidationResult
     {
-        public List<QuotationValidatorError> Errors { get; set; } = new List<QuotationValidatorError>();
+        public List<QuotationValidationError> Errors { get; set; } = new List<QuotationValidationError>();
         public bool IsValid => Errors.Count == 0;
     }
 }

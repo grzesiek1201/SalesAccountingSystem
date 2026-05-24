@@ -6,7 +6,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AccountingSystem.Application.Validation.Products
 {
-    class ProductValidationResult
+    internal class ProductValidationResult
     {
         public List<ProductValidationError> Errors { get; set; } = new List<ProductValidationError>();
         public bool IsValid => Errors.Count == 0;
