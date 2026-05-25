@@ -45,38 +45,32 @@ namespace AccountingSystem.Application.Validation.Customers
                 }
             }
    
-            if (customer.Address == null)
-            {
-                result.Errors.Add(CustomerValidationError.AddressNull);
-            }
+
+            if (string.IsNullOrWhiteSpace(customer.ZipCode))
+                result.Errors.Add(CustomerValidationError.EmptyZipCode);
+
             else
             {
-                if (string.IsNullOrWhiteSpace(customer.Address.ZipCode))
-                    result.Errors.Add(CustomerValidationError.EmptyZipCode);
+                if (customer.ZipCode.Length != 5)
+                    result.Errors.Add(CustomerValidationError.InvalidZipCode);
 
-                else
-                {
-                    if (customer.Address.ZipCode.Length != 5)
-                        result.Errors.Add(CustomerValidationError.InvalidZipCode);
+                if (!customer.ZipCode.All(char.IsDigit))
+                    result.Errors.Add(CustomerValidationError.NotDigitsZipCode);
+            }
 
-                    if (!customer.Address.ZipCode.All(char.IsDigit))
-                        result.Errors.Add(CustomerValidationError.NotDigitsZipCode);
-                }
-
-                if (string.IsNullOrWhiteSpace(customer.Address.City))
-                    result.Errors.Add(CustomerValidationError.EmptyCity);
-                else
-                {
-                    if (customer.Address.City.Length > 50)
-                        result.Errors.Add(CustomerValidationError.CityTooLong);
-                }
-                if (string.IsNullOrWhiteSpace(customer.Address.Street))
-                    result.Errors.Add(CustomerValidationError.EmptyStreet);
-                else
-                {
-                    if (customer.Address.Street.Length > 50)
-                        result.Errors.Add(CustomerValidationError.StreetTooLong);
-                }
+            if (string.IsNullOrWhiteSpace(customer.City))
+                result.Errors.Add(CustomerValidationError.EmptyCity);
+            else
+            {
+               if (customer.City.Length > 50)
+                    result.Errors.Add(CustomerValidationError.CityTooLong);
+            }
+            if (string.IsNullOrWhiteSpace(customer.Street))
+               result.Errors.Add(CustomerValidationError.EmptyStreet);
+            else
+            {
+               if (customer.Street.Length > 50)
+                   result.Errors.Add(CustomerValidationError.StreetTooLong);
             }
             return result;
         }

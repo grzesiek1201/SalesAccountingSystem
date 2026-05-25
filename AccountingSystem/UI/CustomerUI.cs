@@ -48,8 +48,8 @@ namespace AccountingSystem.UI
             {
                 Console.WriteLine(
                     $"Name: {c.Name}, Id: {c.Id}, Email: {c.Email},\n" +
-                    $"Zip Code: {c.Address.ZipCode}, Street: {c.Address.Street}, City: {c.Address.City},\n" +
-                    $"Wallet: {c.Wallet}"
+                    $"Zip Code: {c.ZipCode}, Street: {c.Street}, City: {c.City},\n" +
+                    $"In debt: {c.InDebt}"
                 );
             }
         }
@@ -64,8 +64,8 @@ namespace AccountingSystem.UI
             {
                 Console.WriteLine(
                     $"Name: {result.Name}, Id: {result.Id}, Email: {result.Email},\n" +
-                    $"Zip Code: {result.Address.ZipCode}, Street: {result.Address.Street}, City: {result.Address.City},\n" +
-                    $"Wallet: {result.Wallet}"
+                    $"Zip Code: {result.ZipCode}, Street: {result.Street}, City: {result.City},\n" +
+                    $"In debt: {result.InDebt}"
                 );
             }
             else
@@ -111,17 +111,12 @@ namespace AccountingSystem.UI
             Console.Write("add email address: ");
             string email = Console.ReadLine();
 
-            var address = new Address
-            {
-                ZipCode = zip,
-                City = city,
-                Street = street
-            };
-
             return new Customer
             {
                 Name = name,
-                Address = address,
+                ZipCode = zip,
+                City = city,
+                Street = street,
                 Email = email
             };
         }
@@ -142,7 +137,6 @@ namespace AccountingSystem.UI
                 CustomerValidationError.EmptyName => "Name is empty",
                 CustomerValidationError.NameTooLong => "Name is too long",
                 CustomerValidationError.DuplicateName => "Name is duplicated",
-                CustomerValidationError.AddressNull => "Address is empty",
                 CustomerValidationError.EmptyZipCode => "Zip code is empty",
                 CustomerValidationError.NotDigitsZipCode => "Zip code must contain only digits",
                 CustomerValidationError.EmptyCity => "City is empty",

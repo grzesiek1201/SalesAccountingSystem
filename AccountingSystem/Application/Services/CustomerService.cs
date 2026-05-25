@@ -58,7 +58,9 @@ namespace AccountingSystem.Application.Services
                 return Domain.Enums.CustomerEditResult.InvalidData;
 
             existing.Name = customer.Name;
-            existing.Address = customer.Address;
+            existing.Street = customer.Street;
+            existing.ZipCode = customer.ZipCode;
+            existing.City = customer.City;
             existing.Email = customer.Email;
 
             return Domain.Enums.CustomerEditResult.Success;
@@ -82,7 +84,7 @@ namespace AccountingSystem.Application.Services
                 return Domain.Enums.ArchiveCustomerResult.NotFound;
             }
 
-            if (existing.Wallet.InDebt == true)
+            if (existing.InDebt == true)
             {
                 return Domain.Enums.ArchiveCustomerResult.CustomerInDebt;
             }

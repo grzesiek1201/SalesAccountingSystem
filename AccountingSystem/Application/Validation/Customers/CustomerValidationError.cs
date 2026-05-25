@@ -3,7 +3,6 @@
     EmptyName,
     NameTooLong,
     DuplicateName,
-    AddressNull,
     EmptyZipCode,
     InvalidZipCode,
     NotDigitsZipCode,
