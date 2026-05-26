@@ -19,7 +19,7 @@ namespace AccountingSystem.Domain.Entities
 
         public bool IsQuotationArchived { get; set; }
 
-        public List<QuotationItem> Items { get; set; } = new();
+        public ICollection<QuotationItem> Items { get; set; } = new List<QuotationItem>();
     }
 
     public class QuotationItem
@@ -38,9 +38,10 @@ namespace AccountingSystem.Domain.Entities
 
         public decimal DiscountPercent { get; set; }
 
-        public decimal UnitPrice { get; set; }
+        // snapshot price
+        public decimal BaseUnitPrice { get; set; }
 
         public decimal Total =>
-            Quantity * UnitPrice * (1 - DiscountPercent / 100);
+            Quantity * BaseUnitPrice * (1 - DiscountPercent / 100m);
     }
 }

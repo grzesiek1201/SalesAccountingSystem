@@ -19,9 +19,6 @@ namespace AccountingSystem.UI
         {
             var product = GetProductInput();
 
-            if (product == null)
-                return;
-
             var response = _productService.AddProduct(product);
 
             if (!response.IsSuccess)
@@ -30,7 +27,6 @@ namespace AccountingSystem.UI
                 {
                     Console.WriteLine(GetProductErrorMessage(error));
                 }
-
                 return;
             }
 
@@ -39,73 +35,64 @@ namespace AccountingSystem.UI
 
         public void EditProductFlow()
         {
-            Console.WriteLine("To edit product fill fields below.");
+            Console.WriteLine("Edit product - fill fields below.");
 
             int id = GetProductId();
-
             var product = GetProductInput();
-
-            if (product == null)
-                return;
 
             product.Id = id;
 
             var result = _productService.EditProduct(product);
 
-            if (result == Domain.Enums.ProductEditResult.NotFound)
+            switch (result)
             {
-                Console.WriteLine("Product not found.");
-            }
-            else if (result == Domain.Enums.ProductEditResult.ProductArchived)
-            {
-                Console.WriteLine("Archived product cannot be edited.");
-            }
-            else if (result == Domain.Enums.ProductEditResult.InvalidData)
-            {
-                Console.WriteLine("Product data is invalid.");
-            }
-            else if (result == Domain.Enums.ProductEditResult.Success)
-            {
-                Console.WriteLine("Product updated successfully.");
+                case Domain.Enums.ProductEditResult.Success:
+                    Console.WriteLine("Product updated successfully");
+                    break;
+
+                case Domain.Enums.ProductEditResult.NotFound:
+                    Console.WriteLine("Product not found");
+                    break;
+
+                case Domain.Enums.ProductEditResult.ProductArchived:
+                    Console.WriteLine("Product is archived");
+                    break;
+
+                case Domain.Enums.ProductEditResult.InvalidData:
+                    Console.WriteLine("Invalid product data");
+                    break;
             }
         }
 
         public void GetAllProductsFlow()
         {
-            List<Product> products = _productService.GetAllProducts();
+            var products = _productService.GetAllProducts();
 
             if (products.Count == 0)
             {
-                Console.WriteLine("Products list is empty.");
+                Console.WriteLine("No products found");
                 return;
             }
 
             foreach (var p in products)
             {
-                Console.WriteLine(
-                    $"Name: {p.Name}, Id: {p.Id}, Price: {p.Price}\n" +
-                    $"Category: {p.Category?.Name}, Archived: {p.IsProductArchived}"
-                );
+                PrintProduct(p);
             }
         }
 
         public void FindProductFlow()
         {
-            int idSearch = GetProductId();
+            int id = GetProductId();
 
-            var result = _productService.FindProduct(idSearch);
+            var product = _productService.FindProduct(id);
 
-            if (result != null)
+            if (product == null)
             {
-                Console.WriteLine(
-                    $"Name: {result.Name}, Id: {result.Id}, Price: {result.Price}\n" +
-                    $"Category: {result.Category?.Name}, Archived: {result.IsProductArchived}"
-                );
+                Console.WriteLine("Product not found");
+                return;
             }
-            else
-            {
-                Console.WriteLine("Product not found.");
-            }
+
+            PrintProduct(product);
         }
 
         public void ArchiveProductFlow()
@@ -114,58 +101,64 @@ namespace AccountingSystem.UI
 
             var result = _productService.ArchiveProduct(id);
 
-            if (result == Domain.Enums.ArchiveProductResult.NotFound)
+            switch (result)
             {
-                Console.WriteLine("Product not found.");
-            }
-            else if (result == Domain.Enums.ArchiveProductResult.Success)
-            {
-                Console.WriteLine("Product archived successfully.");
+                case Domain.Enums.ArchiveProductResult.NotFound:
+                    Console.WriteLine("Product not found");
+                    break;
+
+                case Domain.Enums.ArchiveProductResult.Success:
+                    Console.WriteLine("Product archived successfully");
+                    break;
             }
         }
 
-        public Product GetProductInput()
+        private Product GetProductInput()
         {
-            Console.Write("Add product name: ");
-            string name = Console.ReadLine();
+            Console.Write("Product name: ");
+            string name = Console.ReadLine() ?? "";
 
-            Console.Write("Add price: ");
-            string priceInput = Console.ReadLine();
+            Console.Write("Price: ");
+            decimal price;
 
-            if (!decimal.TryParse(priceInput, out decimal priceValue))
+            while (!decimal.TryParse(Console.ReadLine(), out price))
             {
-                Console.WriteLine("Invalid price format.");
-                return null;
+                Console.Write("Invalid price. Try again: ");
             }
 
-            Console.Write("Add category: ");
-            string group = Console.ReadLine();
-
-            var category = new Category
-            {
-                Name = group
-            };
+            Console.Write("Category name: ");
+            string categoryName = Console.ReadLine() ?? "";
 
             return new Product
             {
                 Name = name,
-                Price = priceValue,
-                Category = category
+                Price = price,
+                Category = new Category
+                {
+                    Name = categoryName
+                }
             };
         }
 
-        public int GetProductId()
+        private int GetProductId()
         {
-            Console.Write("Type product ID: ");
+            Console.Write("Product ID: ");
 
             int id;
-
             while (!int.TryParse(Console.ReadLine(), out id))
             {
-                Console.Write("Invalid ID. Type number: ");
+                Console.Write("Invalid ID. Try again: ");
             }
 
             return id;
+        }
+
+        private void PrintProduct(Product p)
+        {
+            Console.WriteLine(
+                $"Id: {p.Id}, Name: {p.Name}, Price: {p.Price}\n" +
+                $"Category: {p.Category?.Name}, Archived: {p.IsProductArchived}"
+            );
         }
 
         private string GetProductErrorMessage(ProductValidationError error)
@@ -174,12 +167,12 @@ namespace AccountingSystem.UI
             {
                 ProductValidationError.EmptyName => "Name is empty",
                 ProductValidationError.NameTooLong => "Name is too long",
-                ProductValidationError.DuplicateName => "Name is duplicated",
+                ProductValidationError.DuplicateName => "Name already exists",
                 ProductValidationError.InvalidPrice => "Price is invalid",
-                ProductValidationError.EmptyPrice => "Price is empty",
-                ProductValidationError.EmptyCategory => "Category name is empty",
-                ProductValidationError.CategoryTooLong => "Category name is too long",
-                ProductValidationError.DuplicateCategory => "Category name is duplicated",
+                ProductValidationError.EmptyPrice => "Price is required",
+                ProductValidationError.EmptyCategory => "Category is required",
+                ProductValidationError.CategoryTooLong => "Category is too long",
+                ProductValidationError.DuplicateCategory => "Category already exists",
                 _ => "Unknown error"
             };
         }

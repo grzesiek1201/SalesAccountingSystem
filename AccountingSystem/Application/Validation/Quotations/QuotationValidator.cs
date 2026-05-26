@@ -39,13 +39,13 @@ namespace AccountingSystem.Application.Validation.Quotations
                 if (item.Quantity <= 0)
                     result.Errors.Add(QuotationValidationError.InvalidQuantity);
 
-                if (item.UnitPrice <= 0)
+                if (item.BaseUnitPrice <= 0)
                     result.Errors.Add(QuotationValidationError.InvalidUnitPrice);
 
                 if (item.DiscountPercent == null)
                     result.Errors.Add(QuotationValidationError.DiscountEmpty);
                 
-                if (item.DiscountPercent <= 0)
+                if (item.DiscountPercent < 0)
                     result.Errors.Add(QuotationValidationError.DiscountInvalid);
             }
 
@@ -62,10 +62,6 @@ namespace AccountingSystem.Application.Validation.Quotations
 
             if (string.IsNullOrWhiteSpace(quotation.QuotationNumber))
                 result.Errors.Add(QuotationValidationError.EmptyQuotationNumber);
-
-
-            
-    
 
             return result;
         }

@@ -1,5 +1,5 @@
-﻿using AccountingSystem.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using AccountingSystem.Domain.Entities;
 
 namespace AccountingSystem.Infrastructure.Data
 {
@@ -13,5 +13,20 @@ namespace AccountingSystem.Infrastructure.Data
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Quotation> Quotations { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Price)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<QuotationItem>()
+                .Property(q => q.BaseUnitPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<QuotationItem>()
+                .Property(q => q.DiscountPercent)
+                .HasPrecision(5, 2);
+        }
     }
 }

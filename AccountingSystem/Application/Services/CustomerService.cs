@@ -2,24 +2,27 @@
 using AccountingSystem.Application.Validation.Customers;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
-using System;
-using System.Collections.Generic;
-
+using AccountingSystem.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace AccountingSystem.Application.Services
 {
     internal class CustomerService
     {
-        private List<Customer> customers = new List<Customer>();
-        public int nextId;
+        private readonly AppDbContext _context;
         private readonly CustomerValidator _validator;
-        public CustomerService(CustomerValidator validator)
+
+        public CustomerService(AppDbContext context, CustomerValidator validator)
         {
-           _validator = validator;
+            _context = context;
+            _validator = validator;
         }
+
         public CustomerAddResponse AddCustomer(Customer customer)
         {
-            var result = _validator.Validate(customer, customers);
+            var existingCustomers = _context.Customers.AsNoTracking().ToList();
+
+            var result = _validator.Validate(customer, existingCustomers);
 
             if (!result.IsValid)
             {
@@ -30,10 +33,8 @@ namespace AccountingSystem.Application.Services
                 };
             }
 
-            customer.Id = nextId;
-            nextId++;
-
-            customers.Add(customer);
+            _context.Customers.Add(customer);
+            _context.SaveChanges();
 
             return new CustomerAddResponse
             {
@@ -41,55 +42,65 @@ namespace AccountingSystem.Application.Services
             };
         }
 
-        public Domain.Enums.CustomerEditResult EditCustomer(Customer customer)
+        public CustomerEditResult EditCustomer(Customer customer)
         {
-            var existing = customers.Find(x => x.Id == customer.Id);
+            var existing = _context.Customers
+                .FirstOrDefault(x => x.Id == customer.Id);
 
             if (existing == null)
-                return Domain.Enums.CustomerEditResult.NotFound;
+                return CustomerEditResult.NotFound;
 
             if (existing.IsCustomerArchived)
-                return Domain.Enums.CustomerEditResult.CustomerArchived;
+                return CustomerEditResult.CustomerArchived;
 
-            var otherCustomers = customers.Where(x => x.Id != customer.Id).ToList();
+            var otherCustomers = _context.Customers
+                .AsNoTracking()
+                .Where(x => x.Id != customer.Id)
+                .ToList();
+
             var result = _validator.Validate(customer, otherCustomers);
 
             if (!result.IsValid)
-                return Domain.Enums.CustomerEditResult.InvalidData;
+                return CustomerEditResult.InvalidData;
 
             existing.Name = customer.Name;
-            existing.Street = customer.Street;
-            existing.ZipCode = customer.ZipCode;
-            existing.City = customer.City;
             existing.Email = customer.Email;
+            existing.Street = customer.Street;
+            existing.City = customer.City;
+            existing.ZipCode = customer.ZipCode;
 
-            return Domain.Enums.CustomerEditResult.Success;
+            _context.SaveChanges();
+
+            return CustomerEditResult.Success;
         }
 
         public List<Customer> GetAllCustomers()
         {
-            return customers;
+            return _context.Customers
+                .AsNoTracking()
+                .ToList();
         }
 
-        public Customer? FindCustomer(int Id)  
+        public Customer? FindCustomer(int id)
         {
-            return customers.FirstOrDefault(x => x.Id == Id);
+            return _context.Customers
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == id);
         }
 
-        public Domain.Enums.ArchiveCustomerResult ArchiveCustomer(int Id)
+        public ArchiveCustomerResult ArchiveCustomer(int id)
         {
-            var existing = customers.Find(x => x.Id == Id);
+            var existing = _context.Customers
+                .FirstOrDefault(x => x.Id == id);
+
             if (existing == null)
-            {
-                return Domain.Enums.ArchiveCustomerResult.NotFound;
-            }
+                return ArchiveCustomerResult.NotFound;
 
-            if (existing.InDebt == true)
-            {
-                return Domain.Enums.ArchiveCustomerResult.CustomerInDebt;
-            }
             existing.IsCustomerArchived = true;
-            return Domain.Enums.ArchiveCustomerResult.Success;
+
+            _context.SaveChanges();
+
+            return ArchiveCustomerResult.Success;
         }
     }
 }

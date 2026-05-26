@@ -1,4 +1,5 @@
 ﻿using AccountingSystem.Application.Services;
+using AccountingSystem.Application.Validation.Customers;
 using AccountingSystem.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ namespace AccountingSystem.UI
 {
     internal class CustomerUI
     {
-        private CustomerService _customerService;
+        private readonly CustomerService _customerService;
 
         public CustomerUI(CustomerService customerService)
         {
@@ -24,7 +25,7 @@ namespace AccountingSystem.UI
             {
                 foreach (var error in response.Errors)
                 {
-                    Console.WriteLine(error);
+                    Console.WriteLine(GetCustomerErrorMessage(error));
                 }
                 return;
             }
@@ -34,44 +35,55 @@ namespace AccountingSystem.UI
 
         public void EditCustomerFlow()
         {
-            Console.WriteLine("To edit customer just fill fields below. If there is a customer matching your Id, data will change");
+            Console.WriteLine("Edit customer - fill fields. Id must match existing record.");
 
             var customer = GetCustomerInput();
-            _customerService.EditCustomer(customer);
+
+            var result = _customerService.EditCustomer(customer);
+
+            switch (result)
+            {
+                case Domain.Enums.CustomerEditResult.Success:
+                    Console.WriteLine("Customer updated successfully");
+                    break;
+
+                case Domain.Enums.CustomerEditResult.NotFound:
+                    Console.WriteLine("Customer not found");
+                    break;
+
+                case Domain.Enums.CustomerEditResult.CustomerArchived:
+                    Console.WriteLine("Customer is archived");
+                    break;
+
+                case Domain.Enums.CustomerEditResult.InvalidData:
+                    Console.WriteLine("Invalid data");
+                    break;
+            }
         }
 
         public void GetAllCustomerFlow()
         {
-            List<Customer> customers = _customerService.GetAllCustomers();
+            var customers = _customerService.GetAllCustomers();
 
             foreach (var c in customers)
             {
-                Console.WriteLine(
-                    $"Name: {c.Name}, Id: {c.Id}, Email: {c.Email},\n" +
-                    $"Zip Code: {c.ZipCode}, Street: {c.Street}, City: {c.City},\n" +
-                    $"In debt: {c.InDebt}"
-                );
+                PrintCustomer(c);
             }
         }
 
         public void FindCustomerFlow()
         {
-            int idSearch = GetCustomerId();
+            int id = GetCustomerId();
 
-            var result = _customerService.FindCustomer(idSearch);
+            var customer = _customerService.FindCustomer(id);
 
-            if (result != null)
+            if (customer == null)
             {
-                Console.WriteLine(
-                    $"Name: {result.Name}, Id: {result.Id}, Email: {result.Email},\n" +
-                    $"Zip Code: {result.ZipCode}, Street: {result.Street}, City: {result.City},\n" +
-                    $"In debt: {result.InDebt}"
-                );
+                Console.WriteLine("Customer not found");
+                return;
             }
-            else
-            {
-                Console.WriteLine("Customer not found. Try again");
-            }
+
+            PrintCustomer(customer);
         }
 
         public void ArchiveCustomerFlow()
@@ -80,36 +92,38 @@ namespace AccountingSystem.UI
 
             var result = _customerService.ArchiveCustomer(id);
 
-            if (result == Domain.Enums.ArchiveCustomerResult.NotFound)
+            switch (result)
             {
-                Console.WriteLine("Customer is not found. Try again");
-            }
-            else if (result == Domain.Enums.ArchiveCustomerResult.CustomerInDebt)
-            {
-                Console.WriteLine("Customer didn't pay all debts. Only customers without debt can be archived");
-            }
-            else if (result == Domain.Enums.ArchiveCustomerResult.Success)
-            {
-                Console.WriteLine("Customer has been archived.");
+                case Domain.Enums.ArchiveCustomerResult.NotFound:
+                    Console.WriteLine("Customer not found");
+                    break;
+
+                case Domain.Enums.ArchiveCustomerResult.CustomerInDebt:
+                    Console.WriteLine("Customer has unpaid debt");
+                    break;
+
+                case Domain.Enums.ArchiveCustomerResult.Success:
+                    Console.WriteLine("Customer archived");
+                    break;
             }
         }
 
-        public Customer GetCustomerInput()
+        private Customer GetCustomerInput()
         {
-            Console.Write("add name of the company/client: ");
-            string name = Console.ReadLine();
+            Console.Write("Company/client name: ");
+            string name = Console.ReadLine() ?? "";
 
-            Console.Write("add zip code: ");
-            string zip = Console.ReadLine();
+            Console.Write("Zip code: ");
+            string zip = Console.ReadLine() ?? "";
 
-            Console.Write("add city: ");
-            string city = Console.ReadLine();
+            Console.Write("City: ");
+            string city = Console.ReadLine() ?? "";
 
-            Console.Write("add street: ");
-            string street = Console.ReadLine();
+            Console.Write("Street: ");
+            string street = Console.ReadLine() ?? "";
 
-            Console.Write("add email address: ");
-            string email = Console.ReadLine();
+            Console.Write("Email: ");
+            string email = Console.ReadLine() ?? "";
 
             return new Customer
             {
@@ -121,10 +135,27 @@ namespace AccountingSystem.UI
             };
         }
 
-        public int GetCustomerId()
+        private int GetCustomerId()
         {
-            Console.Write("Type customer ID: ");
-            return Convert.ToInt32(Console.ReadLine());
+            Console.Write("Customer ID: ");
+
+            int id;
+
+            while (!int.TryParse(Console.ReadLine(), out id))
+            {
+                Console.WriteLine("Invalid number. Try again:");
+            }
+
+            return id;
+        }
+
+        private void PrintCustomer(Customer c)
+        {
+            Console.WriteLine(
+                $"Id: {c.Id}, Name: {c.Name}, Email: {c.Email}\n" +
+                $"City: {c.City}, Street: {c.Street}, Zip: {c.ZipCode}\n" +
+                $"Archived: {c.IsCustomerArchived}"
+            );
         }
 
         private string GetCustomerErrorMessage(CustomerValidationError error)
@@ -136,7 +167,7 @@ namespace AccountingSystem.UI
                 CustomerValidationError.EmptyEmail => "Email is required",
                 CustomerValidationError.EmptyName => "Name is empty",
                 CustomerValidationError.NameTooLong => "Name is too long",
-                CustomerValidationError.DuplicateName => "Name is duplicated",
+                CustomerValidationError.DuplicateName => "Name already exists",
                 CustomerValidationError.EmptyZipCode => "Zip code is empty",
                 CustomerValidationError.NotDigitsZipCode => "Zip code must contain only digits",
                 CustomerValidationError.EmptyCity => "City is empty",
