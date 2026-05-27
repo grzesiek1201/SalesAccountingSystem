@@ -14,6 +14,7 @@ namespace AccountingSystem.Infrastructure.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Quotation> Quotations { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +35,14 @@ namespace AccountingSystem.Infrastructure.Data
                  .HasPrecision(18, 2);
 
             modelBuilder.Entity<OrderItem>()
+                .Property(q => q.DiscountPercent)
+                .HasPrecision(5, 2);
+
+            modelBuilder.Entity<InvoiceItem>()
+                 .Property(q => q.BaseUnitPrice)
+                 .HasPrecision(18, 2);
+
+            modelBuilder.Entity<InvoiceItem>()
                 .Property(q => q.DiscountPercent)
                 .HasPrecision(5, 2);
         }
