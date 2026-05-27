@@ -2,25 +2,28 @@
 using AccountingSystem.Application.Validation.Quotations;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
-using System;
+using AccountingSystem.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace AccountingSystem.Application.Services
 {
     internal class QuotationService
     {
-        private List<Quotation> quotations = new List<Quotation>();
-        public int nextId;
+        private readonly AppDbContext _context;
         private readonly QuotationValidator _validator;
 
-        public QuotationService(QuotationValidator validator)
+        public QuotationService(AppDbContext context, QuotationValidator validator)
         {
+            _context = context;
             _validator = validator;
         }
 
         public QuotationAddResponse AddQuotation(Quotation quotation)
         {
+            var quotations = _context.Quotations.ToList();
+
             var result = _validator.Validate(quotation, quotations);
 
             if (!result.IsValid)
@@ -32,10 +35,8 @@ namespace AccountingSystem.Application.Services
                 };
             }
 
-            quotation.Id = nextId;
-            nextId++;
-
-            quotations.Add(quotation);
+            _context.Quotations.Add(quotation);
+            _context.SaveChanges();
 
             return new QuotationAddResponse
             {
@@ -43,47 +44,60 @@ namespace AccountingSystem.Application.Services
             };
         }
 
-        public Domain.Enums.QuotationEditResult EditQuotation(Quotation quotation)
+        public QuotationEditResult EditQuotation(Quotation quotation)
         {
-            var existing = quotations.Find(x => x.Id == quotation.Id);
+            var existing = _context.Quotations
+                .FirstOrDefault(x => x.Id == quotation.Id);
 
             if (existing == null)
-                return Domain.Enums.QuotationEditResult.NotFound;
+                return QuotationEditResult.NotFound;
 
             if (existing.IsQuotationArchived)
-                return Domain.Enums.QuotationEditResult.QuotationArchived;
+                return QuotationEditResult.QuotationArchived;
 
-            var otherQuotations = quotations.Where(x => x.Id != quotation.Id).ToList();
+            var otherQuotations = _context.Quotations
+                .Where(x => x.Id != quotation.Id)
+                .ToList();
+
             var result = _validator.Validate(quotation, otherQuotations);
 
             if (!result.IsValid)
-                return Domain.Enums.QuotationEditResult.InvalidData;
+                return QuotationEditResult.InvalidData;
 
             existing.Status = quotation.Status;
             existing.Customer = quotation.Customer;
 
-            return Domain.Enums.QuotationEditResult.Success;
+            _context.SaveChanges();
+
+            return QuotationEditResult.Success;
         }
 
         public List<Quotation> GetAllQuotations()
         {
-            return quotations;
+            return _context.Quotations.ToList();
         }
 
-        public Quotation FindQuotation(int Id)
+        public Quotation FindQuotation(int id)
         {
-            return quotations.FirstOrDefault(x => x.Id == Id);
+            return _context.Quotations
+                .FirstOrDefault(x => x.Id == id);
         }
 
-        public Domain.Enums.ArchiveQuotationResult ArchiveQuotation(int Id)
+        public ArchiveQuotationResult ArchiveQuotation(int id)
         {
-            var existing = quotations.Find(x => x.Id == Id);
+            var existing = _context.Quotations
+                .FirstOrDefault(x => x.Id == id);
+
             if (existing == null)
             {
-                return Domain.Enums.ArchiveQuotationResult.NotFound;
+                return ArchiveQuotationResult.NotFound;
             }
+
             existing.IsQuotationArchived = true;
-            return Domain.Enums.ArchiveQuotationResult.Success;
+
+            _context.SaveChanges();
+
+            return ArchiveQuotationResult.Success;
         }
     }
 }
