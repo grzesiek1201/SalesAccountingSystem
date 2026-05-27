@@ -8,15 +8,18 @@ namespace AccountingSystem.UI
         private readonly CustomerUI _customerUI;
         private readonly ProductUI _productUI;
         private readonly QuotationUI _quotationUI;
+        private readonly OrderUI _orderUI;
 
         public MenuConsole(
             CustomerUI customerUI,
             ProductUI productUI,
-            QuotationUI quotationUI)
+            QuotationUI quotationUI,
+            OrderUI orderUI)
         {
             _customerUI = customerUI;
             _productUI = productUI;
             _quotationUI = quotationUI;
+            _orderUI = orderUI;
         }
 
         public void MainMenu()
@@ -141,8 +144,30 @@ namespace AccountingSystem.UI
             }
         }
 
+        public void OrderMenu()
+        {
+            bool active = true;
+
+            while (active)
+            {
+                Console.WriteLine("ORDER MENU");
+                Console.WriteLine("1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, r - back");
+
+                string input = Console.ReadLine();
+
+                switch (input.Trim().ToLower())
+                {
+                    case "1": _orderUI.AddOrderFlow(); break;
+                    case "2": _orderUI.EditOrderFlow(); break;
+                    case "3": _orderUI.ArchiveOrderFlow(); break;
+                    case "4": _orderUI.FindOrderFlow(); break;
+                    case "5": _orderUI.GetAllOrdersFlow(); break;
+                    case "r": active = false; break;
+                    default: Console.WriteLine("Invalid"); break;
+                }
+            }
+        }
         public void InvoiceMenu() { }
-        public void OrderMenu() { }
         public void PaymentMenu() { }
     }
 }

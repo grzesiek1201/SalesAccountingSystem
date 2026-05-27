@@ -4,6 +4,7 @@ using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Customers;
 using AccountingSystem.Application.Validation.Products;
 using AccountingSystem.Application.Validation.Quotations;
+using AccountingSystem.Application.Validation.Orders;
 using AccountingSystem.UI;
 using Microsoft.EntityFrameworkCore;
 using AccountingSystem.Infrastructure.Data;
@@ -27,17 +28,20 @@ namespace AccountingSystem
                     services.AddScoped<CustomerValidator>();
                     services.AddScoped<ProductValidator>();
                     services.AddScoped<QuotationValidator>();
+                    services.AddScoped<OrderValidator>();
 
                     // SERVICES
                     services.AddScoped<CustomerService>();
                     services.AddScoped<ProductService>();
                     services.AddScoped<QuotationService>();
+                    services.AddScoped<OrderService>();
 
                     // UI
                     services.AddScoped<MenuConsole>();
                     services.AddScoped<CustomerUI>();
                     services.AddScoped<ProductUI>();
                     services.AddScoped<QuotationUI>();
+                    services.AddScoped<OrderUI>();
                 })
                 .Build();
 
