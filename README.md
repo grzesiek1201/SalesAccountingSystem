@@ -26,7 +26,7 @@ Projekt zbudowany w architekturze warstwowej:
 ## Uruchomienie
 
 Wymagania:
-- .NET 10 SDK (lub wersja zgodna z projektem)
+- .NET 8 SDK (lub wersja zgodna z projektem)
 
 Uruchomienie:
 ```bash

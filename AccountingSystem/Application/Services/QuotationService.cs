@@ -3,6 +3,7 @@ using AccountingSystem.Application.Validation.Quotations;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using AccountingSystem.Infrastructure.Data;
+using AccountingSystem.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,11 +14,16 @@ namespace AccountingSystem.Application.Services
     {
         private readonly AppDbContext _context;
         private readonly QuotationValidator _validator;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public QuotationService(AppDbContext context, QuotationValidator validator)
+        public QuotationService(
+            AppDbContext context,
+            QuotationValidator validator,
+            IUnitOfWork unitOfWork)
         {
             _context = context;
             _validator = validator;
+            _unitOfWork = unitOfWork;
         }
 
         public QuotationAddResponse AddQuotation(Quotation quotation)
@@ -36,7 +42,8 @@ namespace AccountingSystem.Application.Services
             }
 
             _context.Quotations.Add(quotation);
-            _context.SaveChanges();
+
+            _unitOfWork.Save();
 
             return new QuotationAddResponse
             {
@@ -67,7 +74,7 @@ namespace AccountingSystem.Application.Services
             existing.Status = quotation.Status;
             existing.Customer = quotation.Customer;
 
-            _context.SaveChanges();
+            _unitOfWork.Save();
 
             return QuotationEditResult.Success;
         }
@@ -89,13 +96,11 @@ namespace AccountingSystem.Application.Services
                 .FirstOrDefault(x => x.Id == id);
 
             if (existing == null)
-            {
                 return ArchiveQuotationResult.NotFound;
-            }
 
             existing.IsQuotationArchived = true;
 
-            _context.SaveChanges();
+            _unitOfWork.Save();
 
             return ArchiveQuotationResult.Success;
         }

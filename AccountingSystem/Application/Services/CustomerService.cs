@@ -3,6 +3,7 @@ using AccountingSystem.Application.Validation.Customers;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using AccountingSystem.Infrastructure.Data;
+using AccountingSystem.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountingSystem.Application.Services
@@ -11,11 +12,16 @@ namespace AccountingSystem.Application.Services
     {
         private readonly AppDbContext _context;
         private readonly CustomerValidator _validator;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CustomerService(AppDbContext context, CustomerValidator validator)
+        public CustomerService(
+            AppDbContext context,
+            CustomerValidator validator,
+            IUnitOfWork unitOfWork)
         {
             _context = context;
             _validator = validator;
+            _unitOfWork = unitOfWork;
         }
 
         public CustomerAddResponse AddCustomer(Customer customer)
@@ -34,7 +40,8 @@ namespace AccountingSystem.Application.Services
             }
 
             _context.Customers.Add(customer);
-            _context.SaveChanges();
+
+            _unitOfWork.Save();
 
             return new CustomerAddResponse
             {
@@ -69,7 +76,7 @@ namespace AccountingSystem.Application.Services
             existing.City = customer.City;
             existing.ZipCode = customer.ZipCode;
 
-            _context.SaveChanges();
+            _unitOfWork.Save();
 
             return CustomerEditResult.Success;
         }
@@ -98,7 +105,7 @@ namespace AccountingSystem.Application.Services
 
             existing.IsCustomerArchived = true;
 
-            _context.SaveChanges();
+            _unitOfWork.Save();
 
             return ArchiveCustomerResult.Success;
         }

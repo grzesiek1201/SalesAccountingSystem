@@ -1,14 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using AccountingSystem.Application.Services;
+﻿using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Customers;
+using AccountingSystem.Application.Validation.Invoices;
+using AccountingSystem.Application.Validation.Orders;
 using AccountingSystem.Application.Validation.Products;
 using AccountingSystem.Application.Validation.Quotations;
-using AccountingSystem.Application.Validation.Orders;
-using AccountingSystem.Application.Validation.Invoices;
+using AccountingSystem.Infrastructure.Data;
+using AccountingSystem.Infrastructure.Persistence;
 using AccountingSystem.UI;
 using Microsoft.EntityFrameworkCore;
-using AccountingSystem.Infrastructure.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace AccountingSystem
 {
@@ -21,9 +22,9 @@ namespace AccountingSystem
                 {
                     // DB
                     services.AddDbContext<AppDbContext>(options =>
-                        options.UseSqlServer(
+                            options.UseSqlServer(
                             "Server=localhost\\SQLEXPRESS;Database=AccountingSystemDb;Trusted_Connection=True;TrustServerCertificate=True;"
-                        ));
+                            ));
 
                     // VALIDATORS
                     services.AddScoped<CustomerValidator>();
@@ -46,6 +47,8 @@ namespace AccountingSystem
                     services.AddScoped<QuotationUI>();
                     services.AddScoped<OrderUI>();
                     services.AddScoped<InvoiceUI>();
+
+                    services.AddScoped<IUnitOfWork, UnitOfWork>();
                 })
                 .Build();
 

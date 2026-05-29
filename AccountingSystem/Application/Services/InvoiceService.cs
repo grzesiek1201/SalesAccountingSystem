@@ -3,7 +3,7 @@ using AccountingSystem.Application.Validation.Invoices;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using AccountingSystem.Infrastructure.Data;
-using AccountingSystem.UI;
+using AccountingSystem.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +14,16 @@ namespace AccountingSystem.Application.Services
     {
         private readonly AppDbContext _context;
         private readonly InvoiceValidator _validator;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public InvoiceService(AppDbContext context, InvoiceValidator validator)
+        public InvoiceService(
+            AppDbContext context,
+            InvoiceValidator validator,
+            IUnitOfWork unitOfWork)
         {
             _context = context;
             _validator = validator;
+            _unitOfWork = unitOfWork;
         }
 
         public InvoiceAddResponse AddInvoice(Invoice invoice)
@@ -37,7 +42,8 @@ namespace AccountingSystem.Application.Services
             }
 
             _context.Invoices.Add(invoice);
-            _context.SaveChanges();
+
+            _unitOfWork.Save();
 
             return new InvoiceAddResponse
             {
@@ -68,7 +74,7 @@ namespace AccountingSystem.Application.Services
             existing.Status = invoice.Status;
             existing.Customer = invoice.Customer;
 
-            _context.SaveChanges();
+            _unitOfWork.Save();
 
             return InvoiceEditResult.Success;
         }
@@ -90,16 +96,13 @@ namespace AccountingSystem.Application.Services
                 .FirstOrDefault(x => x.Id == id);
 
             if (existing == null)
-            {
                 return ArchiveInvoiceResult.NotFound;
-            }
 
             existing.IsInvoiceArchived = true;
 
-            _context.SaveChanges();
+            _unitOfWork.Save();
 
             return ArchiveInvoiceResult.Success;
         }
     }
 }
-

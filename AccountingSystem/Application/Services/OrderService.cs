@@ -3,6 +3,7 @@ using AccountingSystem.Application.Validation.Orders;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using AccountingSystem.Infrastructure.Data;
+using AccountingSystem.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,11 +14,16 @@ namespace AccountingSystem.Application.Services
     {
         private readonly AppDbContext _context;
         private readonly OrderValidator _validator;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public OrderService(AppDbContext context, OrderValidator validator)
+        public OrderService(
+            AppDbContext context,
+            OrderValidator validator,
+            IUnitOfWork unitOfWork)
         {
             _context = context;
             _validator = validator;
+            _unitOfWork = unitOfWork;
         }
 
         public OrderAddResponse AddOrder(Order order)
@@ -36,7 +42,8 @@ namespace AccountingSystem.Application.Services
             }
 
             _context.Orders.Add(order);
-            _context.SaveChanges();
+
+            _unitOfWork.Save();
 
             return new OrderAddResponse
             {
@@ -67,7 +74,7 @@ namespace AccountingSystem.Application.Services
             existing.Status = order.Status;
             existing.Customer = order.Customer;
 
-            _context.SaveChanges();
+            _unitOfWork.Save();
 
             return OrderEditResult.Success;
         }
@@ -89,16 +96,13 @@ namespace AccountingSystem.Application.Services
                 .FirstOrDefault(x => x.Id == id);
 
             if (existing == null)
-            {
                 return ArchiveOrderResult.NotFound;
-            }
 
             existing.IsOrderArchived = true;
 
-            _context.SaveChanges();
+            _unitOfWork.Save();
 
             return ArchiveOrderResult.Success;
         }
     }
 }
-
