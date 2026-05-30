@@ -22,8 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Infrastructure\Repositories\" />
-    <Folder Include="Infrastructure\Storage\" />
+    <Folder Include="AccountingSystem.Infrastructure\Repositories\" />
+    <Folder Include="AccountingSystem.Infrastructure\Storage\" />
+    <Folder Include="UI\" />
   </ItemGroup>
 
 </Project>
