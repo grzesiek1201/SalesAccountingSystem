@@ -1,0 +1,104 @@
+using AccountingSystem.Application.DTOs;
+using AccountingSystem.Application.Interfaces;
+using AccountingSystem.Application.Repositories;
+using AccountingSystem.Application.Validation.Invoices;
+using AccountingSystem.Domain.Entities;
+using AccountingSystem.Domain.Enums;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace AccountingSystem.Application.Services
+{
+    public class InvoiceService
+    {
+        private readonly IInvoiceRepository _invoiceRepository;
+        private readonly InvoiceValidator _validator;
+        private readonly IUnitOfWork _unitOfWork;
+
+        public InvoiceService(
+            IInvoiceRepository invoiceRepository,
+            InvoiceValidator validator,
+            IUnitOfWork unitOfWork)
+        {
+            _invoiceRepository = invoiceRepository;
+            _validator = validator;
+            _unitOfWork = unitOfWork;
+        }
+
+        public InvoiceAddResponse AddInvoice(Invoice invoice)
+        {
+            var invoices = _invoiceRepository.GetAll();
+
+            var result = _validator.Validate(invoice, invoices);
+
+            if (!result.IsValid)
+            {
+                return new InvoiceAddResponse
+                {
+                    Result = InvoiceAddResult.InvalidData,
+                    Errors = result.Errors
+                };
+            }
+
+            _invoiceRepository.Add(invoice);
+            _unitOfWork.Save();
+
+            return new InvoiceAddResponse
+            {
+                Result = InvoiceAddResult.Success
+            };
+        }
+
+        public InvoiceEditResult EditInvoice(Invoice invoice)
+        {
+            var existing = _invoiceRepository.GetById(invoice.Id);
+
+            if (existing == null)
+                return InvoiceEditResult.NotFound;
+
+            if (existing.IsInvoiceArchived)
+                return InvoiceEditResult.InvoiceArchived;
+
+            var otherInvoices = _invoiceRepository
+                .GetAll()
+                .Where(x => x.Id != invoice.Id)
+                .ToList();
+
+            var result = _validator.Validate(invoice, otherInvoices);
+
+            if (!result.IsValid)
+                return InvoiceEditResult.InvalidData;
+
+            existing.Status = invoice.Status;
+            existing.Customer = invoice.Customer;
+
+            _unitOfWork.Save();
+
+            return InvoiceEditResult.Success;
+        }
+
+        public List<Invoice> GetAllInvoices()
+        {
+            return _invoiceRepository.GetAll();
+        }
+
+        public Invoice? FindInvoice(int id)
+        {
+            return _invoiceRepository.GetById(id);
+        }
+
+        public ArchiveInvoiceResult ArchiveInvoice(int id)
+        {
+            var existing = _invoiceRepository.GetById(id);
+
+            if (existing == null)
+                return ArchiveInvoiceResult.NotFound;
+
+            existing.IsInvoiceArchived = true;
+
+            _unitOfWork.Save();
+
+            return ArchiveInvoiceResult.Success;
+        }
+    }
+}
