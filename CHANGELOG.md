@@ -1,6 +1,11 @@
 ﻿# Changelog
 
 
+## [0.1.0] - 2026-05-27
+### Added
+- add payment module and integrate payments with invoices
+
+---
 ## [0.0.9] - 2026-05-27
 ### Added
 - Add implement order and invoice entity, validation, service logic and console UI
