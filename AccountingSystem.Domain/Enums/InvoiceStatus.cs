@@ -6,10 +6,12 @@ namespace AccountingSystem.Domain.Enums
 {
     public enum InvoiceStatus
     {
-        Draft,       
-        Issued,       
-        Paid,        
-        Overdue,      
-        Cancelled     
+        Draft,
+        Issued,
+        PartiallyPaid,
+        Paid,
+        Overdue,
+        Unpaid,
+        Cancelled
     }
 }

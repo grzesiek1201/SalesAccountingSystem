@@ -100,5 +100,58 @@ namespace AccountingSystem.Application.Services
 
             return ArchiveInvoiceResult.Success;
         }
+
+        public PaymentAddResult AddPayment(int invoiceId, Payment payment)
+        {
+            var invoice = _invoiceRepository.GetById(invoiceId);
+
+            if (invoice == null)
+                return PaymentAddResult.InvoiceNotFound;
+
+            if (invoice.IsInvoiceArchived)
+                return PaymentAddResult.InvoiceArchived;
+
+            if (payment.Amount <= 0)
+                return PaymentAddResult.InvalidAmount;
+
+            var totalPaid = invoice.Payments.Sum(p => p.Amount);
+            var remaining = invoice.TotalAmount - totalPaid;
+
+            if (payment.Amount > remaining)
+                return PaymentAddResult.AmountExceedsRemaining;
+
+            payment.InvoiceId = invoiceId;
+            payment.PaymentDate = DateTime.Now;
+
+            invoice.Payments.Add(payment);
+
+            UpdateInvoicePaymentState(invoice);
+
+            _unitOfWork.Save();
+
+            return PaymentAddResult.Success;
+        }
+
+        private void UpdateInvoicePaymentState(Invoice invoice)
+        {
+            var totalPaid = invoice.Payments.Sum(p => p.Amount);
+
+            if (totalPaid <= 0)
+            {
+                invoice.Status = InvoiceStatus.Unpaid;
+                invoice.PaidDate = null;
+                return;
+            }
+
+            if (totalPaid < invoice.TotalAmount)
+            {
+                invoice.Status = InvoiceStatus.PartiallyPaid;
+                invoice.PaidDate = null;
+                return;
+            }
+
+            invoice.Status = InvoiceStatus.Paid;
+            invoice.PaidDate = DateTime.Now;
+        }
     }
 }

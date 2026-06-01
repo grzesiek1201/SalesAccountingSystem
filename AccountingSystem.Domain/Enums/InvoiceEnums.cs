@@ -32,4 +32,13 @@ namespace AccountingSystem.Domain.Enums
         IsValid,
         NotValid
     }
+
+    public enum PaymentAddResult
+    {
+        Success,
+        InvoiceNotFound,
+        InvoiceArchived,
+        InvalidAmount,
+        AmountExceedsRemaining
+    }
 }

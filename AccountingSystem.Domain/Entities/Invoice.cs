@@ -1,9 +1,6 @@
 using AccountingSystem.Domain.Enums;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AccountingSystem.Domain.Entities
 {
@@ -32,6 +29,8 @@ namespace AccountingSystem.Domain.Entities
         public bool IsInvoiceArchived { get; set; }
 
         public ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
+
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     }
 
     public class InvoiceItem
@@ -52,11 +51,9 @@ namespace AccountingSystem.Domain.Entities
 
         public decimal DiscountPercent { get; set; }
 
-        // snapshot price
         public decimal BaseUnitPrice { get; set; }
 
         public decimal Total =>
             Quantity * BaseUnitPrice * (1 - DiscountPercent / 100m);
     }
 }
-
