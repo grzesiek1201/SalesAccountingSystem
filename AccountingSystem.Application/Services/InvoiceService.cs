@@ -153,5 +153,20 @@ namespace AccountingSystem.Application.Services
             invoice.Status = InvoiceStatus.Paid;
             invoice.PaidDate = DateTime.Now;
         }
+
+        public void RecalculateInvoiceStatus(Invoice invoice)
+        {
+            var paid = invoice.Payments.Sum(p => p.Amount);
+
+            if (paid <= 0)
+                invoice.Status = InvoiceStatus.Issued;
+            else if (paid < invoice.TotalAmount)
+                invoice.Status = InvoiceStatus.PartiallyPaid;
+            else
+                invoice.Status = InvoiceStatus.Paid;
+
+            if (invoice.DueDate < DateTime.Now && invoice.Status != InvoiceStatus.Paid)
+                invoice.Status = InvoiceStatus.Overdue;
+        }
     }
 }

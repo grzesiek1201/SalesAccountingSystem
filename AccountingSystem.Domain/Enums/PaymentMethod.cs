@@ -4,6 +4,7 @@
     {
         Cash,
         Card,
+        BankTransfer,
         Transfer
     }
 }

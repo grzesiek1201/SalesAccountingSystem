@@ -7,19 +7,22 @@ namespace AccountingSystem.UI
         private readonly QuotationUI _quotationUI;
         private readonly OrderUI _orderUI;
         private readonly InvoiceUI _invoiceUI;
+        private readonly PaymentUI _paymentUI;
 
         public MenuConsole(
             CustomerUI customerUI,
             ProductUI productUI,
             QuotationUI quotationUI,
             OrderUI orderUI,
-            InvoiceUI invoiceUI)
+            InvoiceUI invoiceUI,
+            PaymentUI paymentUI )
         {
             _customerUI = customerUI;
             _productUI = productUI;
             _quotationUI = quotationUI;
             _orderUI = orderUI;
             _invoiceUI = invoiceUI;
+            _paymentUI = paymentUI;
         }
 
         public void MainMenu()
@@ -180,7 +183,14 @@ namespace AccountingSystem.UI
 
         public void PaymentMenu()
         {
-            Console.WriteLine("Feature not implemented yet.");
+            RunMenu(
+                "PAYMENT MENU",
+                "1- Add payment to invoice, 2- View payments for invoice, r - back",
+                new Dictionary<string, Action>
+                {
+            { "1", _paymentUI.AddPaymentFlow },
+            { "2", _paymentUI.GetPaymentsForInvoiceFlow }
+                });
         }
     }
 }

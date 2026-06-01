@@ -6,6 +6,7 @@ using AccountingSystem.Application.Validation.Invoices;
 using AccountingSystem.Application.Validation.Orders;
 using AccountingSystem.Application.Validation.Products;
 using AccountingSystem.Application.Validation.Quotations;
+using AccountingSystem.Application.Validation.Payments;
 using AccountingSystem.Infrastructure.Data;
 using AccountingSystem.Infrastructure.Repositories;
 using AccountingSystem.Infrastructure.UnitOfWork;
@@ -36,6 +37,7 @@ namespace AccountingSystem
                     services.AddScoped<QuotationValidator>();
                     services.AddScoped<OrderValidator>();
                     services.AddScoped<InvoiceValidator>();
+                    services.AddScoped<PaymentValidator>();
 
                     // SERVICES
                     services.AddScoped<CustomerService>();
@@ -43,6 +45,7 @@ namespace AccountingSystem
                     services.AddScoped<QuotationService>();
                     services.AddScoped<OrderService>();
                     services.AddScoped<InvoiceService>();
+                    services.AddScoped<PaymentService>();
 
                     // UI
                     services.AddScoped<MenuConsole>();
@@ -51,6 +54,7 @@ namespace AccountingSystem
                     services.AddScoped<QuotationUI>();
                     services.AddScoped<OrderUI>();
                     services.AddScoped<InvoiceUI>();
+                    services.AddScoped<PaymentUI>();
 
                     services.AddScoped<IUnitOfWork, UnitOfWork>();
                     services.AddScoped<ICustomerRepository, CustomerRepository>();
@@ -58,6 +62,7 @@ namespace AccountingSystem
                     services.AddScoped<IQuotationRepository, QuotationRepository>();
                     services.AddScoped<IOrderRepository, OrderRepository>();
                     services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+                    services.AddScoped<IPaymentRepository, PaymentRepository>();
 
                 })
                 .Build();
