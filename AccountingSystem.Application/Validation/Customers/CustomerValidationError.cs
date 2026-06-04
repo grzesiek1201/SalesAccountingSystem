@@ -11,6 +11,7 @@ public enum CustomerValidationError
     InvalidEmail,
     EmptyEmail,
     EmailTooLong,
+    DuplicateEmail,
     EmptyStreet,
     StreetTooLong
 }

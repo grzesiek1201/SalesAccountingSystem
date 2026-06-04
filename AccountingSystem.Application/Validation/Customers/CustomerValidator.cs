@@ -36,6 +36,9 @@ namespace AccountingSystem.Application.Validation.Customers
                 if (customer.Email.Length > 64)
                     result.Errors.Add(CustomerValidationError.EmailTooLong);
 
+                if (customers.Exists(x => x.Email == customer.Email && x.Id != customer.Id))
+                    result.Errors.Add(CustomerValidationError.DuplicateEmail);
+
                 if (customer.Email.Count(c => c == '@') != 1 ||
                     customer.Email.StartsWith("@") ||
                     customer.Email.EndsWith("@") ||

@@ -165,6 +165,7 @@ namespace AccountingSystem.UI
                 CustomerValidationError.InvalidEmail => "Email format is invalid",
                 CustomerValidationError.InvalidZipCode => "Zip code is invalid",
                 CustomerValidationError.EmptyEmail => "Email is required",
+                CustomerValidationError.DuplicateEmail => "Email already exists",
                 CustomerValidationError.EmptyName => "Name is empty",
                 CustomerValidationError.NameTooLong => "Name is too long",
                 CustomerValidationError.DuplicateName => "Name already exists",
