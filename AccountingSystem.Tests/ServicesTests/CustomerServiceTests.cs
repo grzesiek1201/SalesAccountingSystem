@@ -49,7 +49,7 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- ADD ----------------
 
         [Fact]
-        public void AddCustomer_ValidCustomer_ReturnsSuccess()
+        public void AddCustomer_ValidCustomer_ShouldReturnSuccess()
         {
             var customer = CreateValidCustomer();
 
@@ -65,7 +65,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void AddCustomer_InvalidCustomer_ReturnsInvalidData()
+        public void AddCustomer_InvalidCustomer_ShouldReturnInvalidData()
         {
             var customer = CreateValidCustomer();
             customer.Email = "bad-email";
@@ -82,7 +82,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void AddCustomer_DuplicateEmail_ReturnsInvalidData()
+        public void AddCustomer_DuplicateEmail_ShouldReturnInvalidData()
         {
             var customer = CreateValidCustomer();
 
@@ -103,7 +103,26 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- EDIT ----------------
 
         [Fact]
-        public void EditCustomer_CustomerNotFound_ReturnsNotFound()
+        public void EditCustomer_ValidCustomer_ShouldReturnSuccess()
+        {
+            var customer = CreateValidCustomer();
+
+            _repoMock.Setup(r => r.GetById(customer.Id))
+                .Returns(customer);
+
+            _repoMock.Setup(r => r.GetAll())
+                .Returns(new List<Customer>());
+
+            var result = _service.EditCustomer(customer);
+
+            Assert.Equal(CustomerEditResult.Success, result);
+
+            _repoMock.Verify(r => r.Update(customer), Times.Once);
+            _uowMock.Verify(u => u.Save(), Times.Once);
+        }
+
+        [Fact]
+        public void EditCustomer_CustomerNotFound_ShouldReturnNotFound()
         {
             var customer = CreateValidCustomer();
 
@@ -119,7 +138,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void EditCustomer_ArchivedCustomer_ReturnsCustomerArchived()
+        public void EditCustomer_ArchivedCustomer_ShouldReturnCustomerArchived()
         {
             var customer = CreateValidCustomer();
             customer.IsCustomerArchived = true;
@@ -136,7 +155,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void EditCustomer_InvalidCustomer_ReturnsInvalidData()
+        public void EditCustomer_InvalidCustomer_ShouldReturnInvalidData()
         {
             var customer = CreateValidCustomer();
             customer.Email = "bad-email";
@@ -155,29 +174,11 @@ namespace AccountingSystem.Tests.ServicesTests
             _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
-        [Fact]
-        public void EditCustomer_ValidCustomer_ReturnsSuccess()
-        {
-            var customer = CreateValidCustomer();
-
-            _repoMock.Setup(r => r.GetById(customer.Id))
-                .Returns(customer);
-
-            _repoMock.Setup(r => r.GetAll())
-                .Returns(new List<Customer>());
-
-            var result = _service.EditCustomer(customer);
-
-            Assert.Equal(CustomerEditResult.Success, result);
-
-            _repoMock.Verify(r => r.Update(customer), Times.Once);
-            _uowMock.Verify(u => u.Save(), Times.Once);
-        }
 
         // ---------------- ARCHIVE ----------------
 
         [Fact]
-        public void ArchiveCustomer_ValidCustomer_ReturnsSuccess()
+        public void ArchiveCustomer_ValidCustomer_ShouldReturnSuccess()
         {
             var customer = CreateValidCustomer();
 
@@ -194,7 +195,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void ArchiveCustomer_CustomerNotFound_ReturnsNotFound()
+        public void ArchiveCustomer_CustomerNotFound_ShouldReturnNotFound()
         {
             _repoMock.Setup(r => r.GetById(It.IsAny<int>()))
                 .Returns((Customer)null);
@@ -210,7 +211,7 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- FIND ----------------
 
         [Fact]
-        public void FindCustomer_ExistingId_ReturnsCustomer()
+        public void FindCustomer_ExistingId_ShouldReturnCustomer()
         {
             var customer = CreateValidCustomer();
 
@@ -224,7 +225,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void FindCustomer_NonExistingId_ReturnsNull()
+        public void FindCustomer_NonExistingId_ShouldReturnNull()
         {
             _repoMock.Setup(r => r.GetById(It.IsAny<int>()))
                 .Returns((Customer)null);
@@ -237,7 +238,7 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- GET ALL ----------------
 
         [Fact]
-        public void GetAllCustomers_ReturnsCustomersFromRepository()
+        public void GetAllCustomers_ShouldReturnCustomersFromRepository()
         {
             var customers = new List<Customer>
             {

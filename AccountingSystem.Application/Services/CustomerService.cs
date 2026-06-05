@@ -57,11 +57,12 @@ namespace AccountingSystem.Application.Services
             if (existing.IsCustomerArchived)
                 return CustomerEditResult.CustomerArchived;
 
-            var others = _repository.GetAll()
+            var otherCustomers = _repository
+                .GetAll()
                 .Where(x => x.Id != customer.Id)
                 .ToList();
 
-            var result = _validator.Validate(customer, others);
+            var result = _validator.Validate(customer, otherCustomers);
 
             if (!result.IsValid)
                 return CustomerEditResult.InvalidData;

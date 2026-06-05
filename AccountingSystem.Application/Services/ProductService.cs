@@ -73,6 +73,7 @@ namespace AccountingSystem.Application.Services
             existing.Price = product.Price;
             existing.Category = product.Category;
 
+            _productRepository.Update(existing);
             _unitOfWork.Save();
 
             return ProductEditResult.Success;
@@ -97,6 +98,7 @@ namespace AccountingSystem.Application.Services
 
             existing.IsProductArchived = true;
 
+            _productRepository.Update(existing);
             _unitOfWork.Save();
 
             return ArchiveProductResult.Success;
