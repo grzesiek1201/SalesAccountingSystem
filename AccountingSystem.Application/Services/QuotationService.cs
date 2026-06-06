@@ -59,8 +59,7 @@ namespace AccountingSystem.Application.Services
             if (existing.IsQuotationArchived)
                 return QuotationEditResult.QuotationArchived;
 
-            var otherQuotations = _quotationRepository
-                .GetAll()
+            var otherQuotations = (_quotationRepository.GetAll() ?? new List<Quotation>())
                 .Where(x => x.Id != quotation.Id)
                 .ToList();
 
@@ -72,6 +71,7 @@ namespace AccountingSystem.Application.Services
             existing.Status = quotation.Status;
             existing.Customer = quotation.Customer;
 
+            _quotationRepository.Update(existing);
             _unitOfWork.Save();
 
             return QuotationEditResult.Success;
@@ -96,6 +96,7 @@ namespace AccountingSystem.Application.Services
 
             existing.IsQuotationArchived = true;
 
+            _quotationRepository.Update(existing);
             _unitOfWork.Save();
 
             return ArchiveQuotationResult.Success;

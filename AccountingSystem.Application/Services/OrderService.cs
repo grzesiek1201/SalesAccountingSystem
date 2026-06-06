@@ -72,6 +72,7 @@ namespace AccountingSystem.Application.Services
             existing.Status = order.Status;
             existing.Customer = order.Customer;
 
+            _orderRepository.Update(existing);
             _unitOfWork.Save();
 
             return OrderEditResult.Success;
@@ -96,6 +97,7 @@ namespace AccountingSystem.Application.Services
 
             existing.IsOrderArchived = true;
 
+            _orderRepository.Update(existing);
             _unitOfWork.Save();
 
             return ArchiveOrderResult.Success;

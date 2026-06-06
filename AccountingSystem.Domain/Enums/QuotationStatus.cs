@@ -6,6 +6,7 @@ namespace AccountingSystem.Domain.Enums
 {
     public enum QuotationStatus
     {
+        Draft,
         Active,
         Inactive,
         Canceled,

@@ -59,10 +59,7 @@ namespace AccountingSystem.Application.Services
             if (existing.IsInvoiceArchived)
                 return InvoiceEditResult.InvoiceArchived;
 
-            var otherInvoices = _invoiceRepository
-                .GetAll()
-                .Where(x => x.Id != invoice.Id)
-                .ToList();
+            var otherInvoices = _invoiceRepository.GetAll()?.ToList() ?? new List<Invoice>();
 
             var result = _validator.Validate(invoice, otherInvoices);
 
@@ -72,6 +69,7 @@ namespace AccountingSystem.Application.Services
             existing.Status = invoice.Status;
             existing.Customer = invoice.Customer;
 
+            _invoiceRepository.Update(existing);
             _unitOfWork.Save();
 
             return InvoiceEditResult.Success;
@@ -96,6 +94,7 @@ namespace AccountingSystem.Application.Services
 
             existing.IsInvoiceArchived = true;
 
+            _invoiceRepository.Update(existing);
             _unitOfWork.Save();
 
             return ArchiveInvoiceResult.Success;

@@ -8,5 +8,7 @@ namespace AccountingSystem.Application.Repositories
         List<Quotation> GetAll();
         Quotation? GetById(int id);
         void Add(Quotation quotation);
+
+        void Update(Quotation quotation);
     }
 }

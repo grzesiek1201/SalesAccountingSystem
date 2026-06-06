@@ -8,5 +8,6 @@ namespace AccountingSystem.Application.Repositories
         List<Invoice> GetAll();
         Invoice? GetById(int id);
         void Add(Invoice invoice);
+        void Update(Invoice invoice);
     }
 }

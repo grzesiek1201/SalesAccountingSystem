@@ -114,7 +114,7 @@ namespace AccountingSystem.UI
             {
                 Customer = customer,
                 DateCreated = DateTime.Now,
-                Status = QuotationStatus.Active,
+                Status = QuotationStatus.Draft,
                 Items = new List<QuotationItem>()
             };
         }
