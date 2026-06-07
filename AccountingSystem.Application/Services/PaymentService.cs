@@ -63,8 +63,7 @@ namespace AccountingSystem.Application.Services
         public IQueryable<Payment> GetPaymentsForInvoice(int invoiceId)
         {
             return _paymentRepository
-                .GetAll()
-                .Where(p => p.InvoiceId == invoiceId)
+                .GetByInvoiceId(invoiceId)
                 .AsQueryable();
         }
 
