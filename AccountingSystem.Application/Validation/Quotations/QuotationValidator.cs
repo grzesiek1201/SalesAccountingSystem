@@ -44,8 +44,8 @@ namespace AccountingSystem.Application.Validation.Quotations
 
                 if (item.DiscountPercent == null)
                     result.Errors.Add(QuotationValidationError.DiscountEmpty);
-                
-                if (item.DiscountPercent < 0)
+
+                if (item.DiscountPercent < 0 || item.DiscountPercent > 100)
                     result.Errors.Add(QuotationValidationError.DiscountInvalid);
             }
 

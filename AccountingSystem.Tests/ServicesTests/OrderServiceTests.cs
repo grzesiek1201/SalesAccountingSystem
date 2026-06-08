@@ -5,7 +5,6 @@ using AccountingSystem.Application.Validation.Orders;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Moq;
-using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -16,6 +15,7 @@ namespace AccountingSystem.Tests.ServicesTests
         private readonly Mock<IOrderRepository> _repoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly OrderValidator _validator;
+
         private readonly OrderService _service;
 
         public OrderServiceTests()
@@ -74,14 +74,7 @@ namespace AccountingSystem.Tests.ServicesTests
         private Order CreateInvalidOrder_NoItems()
         {
             var order = CreateValidOrder();
-            order.Items = new List<OrderItem>(); 
-            return order;
-        }
-
-        private Order CreateArchivedOrder()
-        {
-            var order = CreateValidOrder();
-            order.IsOrderArchived = true;
+            order.Items = new List<OrderItem>();
             return order;
         }
 
@@ -93,16 +86,23 @@ namespace AccountingSystem.Tests.ServicesTests
             {
                 new OrderItem
                 {
-                Id = 1,
-                ProductId = 1,
-                Product = new Product { Id = 1 },
-                Position = 1,
-                Quantity = 0, // trigger invalid
-                BaseUnitPrice = 100m,
-                DiscountPercent = 0
+                    Id = 1,
+                    ProductId = 1,
+                    Product = new Product { Id = 1 },
+                    Position = 1,
+                    Quantity = 0,
+                    BaseUnitPrice = 100m,
+                    DiscountPercent = 0
                 }
             };
 
+            return order;
+        }
+
+        private Order CreateArchivedOrder()
+        {
+            var order = CreateValidOrder();
+            order.IsOrderArchived = true;
             return order;
         }
 
@@ -156,7 +156,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void EditOrder_Archived_ShouldReturnArchived()
+        public void EditOrder_Archived_ShouldReturnOrderArchived()
         {
             var order = CreateArchivedOrder();
 
@@ -212,7 +212,7 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- ARCHIVE ----------------
 
         [Fact]
-        public void ArchiveOrder_ShouldReturnSuccess()
+        public void ArchiveOrder_Existing_ShouldReturnSuccess()
         {
             var order = CreateValidOrder();
 
@@ -227,7 +227,7 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- FIND ----------------
 
         [Fact]
-        public void FindOrder_ShouldReturnOrder()
+        public void FindOrder_Existing_ShouldReturnOrder()
         {
             var order = CreateValidOrder();
 
@@ -237,12 +237,13 @@ namespace AccountingSystem.Tests.ServicesTests
             var result = _service.FindOrder(order.Id);
 
             Assert.NotNull(result);
+            Assert.Equal(order.Id, result.Id);
         }
 
         // ---------------- GET ALL ----------------
 
         [Fact]
-        public void GetAll_ShouldReturnList()
+        public void GetAllOrders_ShouldReturnAllOrders()
         {
             _repoMock.Setup(r => r.GetAll())
                 .Returns(new List<Order> { CreateValidOrder(), CreateValidOrder() });

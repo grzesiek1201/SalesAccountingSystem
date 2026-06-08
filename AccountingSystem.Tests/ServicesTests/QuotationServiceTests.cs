@@ -1,15 +1,10 @@
 ﻿using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Services;
-using AccountingSystem.Application.Validation.Customers;
-using AccountingSystem.Application.Validation.Products;
 using AccountingSystem.Application.Validation.Quotations;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
-using Castle.Core.Resource;
 using Moq;
-using System.Collections.Generic;
-using Xunit;
 
 namespace AccountingSystem.Tests.ServicesTests
 {
@@ -18,7 +13,6 @@ namespace AccountingSystem.Tests.ServicesTests
         private readonly Mock<IQuotationRepository> _repoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly QuotationValidator _validator;
-
         private readonly QuotationService _service;
 
         public QuotationServiceTests()
@@ -64,10 +58,7 @@ namespace AccountingSystem.Tests.ServicesTests
                     {
                         Id = 1,
                         ProductId = 1,
-                        Product = new Product
-                        {
-                            Id = 1
-                        },
+                        Product = new Product { Id = 1 },
                         Position = 1,
                         Quantity = 2,
                         BaseUnitPrice = 100m,
@@ -119,9 +110,7 @@ namespace AccountingSystem.Tests.ServicesTests
         [Fact]
         public void AddQuotation_Invalid_ShouldReturnInvalidData()
         {
-            var quotation = CreateValidQuotation();
-
-            quotation.Items.Clear();
+            var quotation = CreateInvalidQuotation_NoItems();
 
             _repoMock.Setup(r => r.GetAll())
                 .Returns(new List<Quotation>());
@@ -135,6 +124,25 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         // ---------------- EDIT ----------------
+
+        [Fact]
+        public void EditQuotation_Valid_ShouldReturnSuccess()
+        {
+            var quotation = CreateValidQuotation();
+
+            _repoMock.Setup(r => r.GetById(quotation.Id))
+                .Returns(quotation);
+
+            _repoMock.Setup(r => r.GetAll())
+                .Returns(new List<Quotation>());
+
+            var result = _service.EditQuotation(quotation);
+
+            Assert.Equal(QuotationEditResult.Success, result);
+
+            _repoMock.Verify(r => r.Update(It.IsAny<Quotation>()), Times.Once);
+            _uowMock.Verify(u => u.Save(), Times.Once);
+        }
 
         [Fact]
         public void EditQuotation_NotFound_ShouldReturnNotFound()
@@ -153,10 +161,9 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void EditQuotation_Archived_ShouldReturnArchived()
+        public void EditQuotation_Archived_ShouldReturnQuotationArchived()
         {
-            var quotation = CreateValidQuotation();
-            quotation.IsQuotationArchived = true;
+            var quotation = CreateInvalidQuotation_Archived();
 
             _repoMock.Setup(r => r.GetById(quotation.Id))
                 .Returns(quotation);
@@ -172,8 +179,7 @@ namespace AccountingSystem.Tests.ServicesTests
         [Fact]
         public void EditQuotation_Invalid_ShouldReturnInvalidData()
         {
-            var quotation = CreateValidQuotation();
-            quotation.QuotationNumber = null;
+            var quotation = CreateInvalidQuotation_NoNumber();
 
             _repoMock.Setup(r => r.GetById(quotation.Id))
                 .Returns(quotation);
@@ -186,11 +192,10 @@ namespace AccountingSystem.Tests.ServicesTests
             _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
-
         // ---------------- ARCHIVE ----------------
 
         [Fact]
-        public void ArchiveQuotation_ValidQuotation_ShouldSuccess()
+        public void ArchiveQuotation_Existing_ShouldReturnSuccess()
         {
             var quotation = CreateValidQuotation();
 
@@ -203,13 +208,26 @@ namespace AccountingSystem.Tests.ServicesTests
 
             _repoMock.Verify(r => r.Update(quotation), Times.Once);
             _uowMock.Verify(u => u.Save(), Times.Once);
+        }
 
+        [Fact]
+        public void ArchiveQuotation_NotFound_ShouldReturnNotFound()
+        {
+            _repoMock.Setup(r => r.GetById(It.IsAny<int>()))
+                .Returns((Quotation)null);
+
+            var result = _service.ArchiveQuotation(1);
+
+            Assert.Equal(ArchiveQuotationResult.NotFound, result);
+
+            _repoMock.Verify(r => r.Update(It.IsAny<Quotation>()), Times.Never);
+            _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
         // ---------------- FIND ----------------
 
         [Fact]
-        public void FindQuotation_ExistingId_ShouldReturnQuotation()
+        public void FindQuotation_Existing_ShouldReturnQuotation()
         {
             var quotation = CreateValidQuotation();
 
@@ -223,7 +241,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void FindQuotation_NonExistingId_ShouldReturnNull()
+        public void FindQuotation_NotExisting_ShouldReturnNull()
         {
             _repoMock.Setup(r => r.GetById(It.IsAny<int>()))
                 .Returns((Quotation)null);
@@ -236,13 +254,15 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- GET ALL ----------------
 
         [Fact]
-        public void GetAllQuotations_ShouldReturnQuotationsFromRepository()
+        public void GetAllQuotations_ShouldReturnAllQuotations()
         {
-            var quotations = new List<Quotation>
-            {
-            CreateValidQuotation(),
-            CreateValidQuotation()
-            };
+            var q1 = CreateValidQuotation();
+
+            var q2 = CreateValidQuotation();
+            q2.Id = 2;
+            q2.QuotationNumber = "Q-2026-002";
+
+            var quotations = new List<Quotation> { q1, q2 };
 
             _repoMock.Setup(r => r.GetAll())
                 .Returns(quotations);
@@ -250,6 +270,8 @@ namespace AccountingSystem.Tests.ServicesTests
             var result = _service.GetAllQuotations();
 
             Assert.Equal(2, result.Count);
+            Assert.Contains(result, x => x.QuotationNumber == "Q-2026-001");
+            Assert.Contains(result, x => x.QuotationNumber == "Q-2026-002");
         }
     }
 }

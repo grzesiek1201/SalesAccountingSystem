@@ -15,9 +15,11 @@ namespace AccountingSystem.Application.Validation.Products
         {
             var result = new ProductValidationResult();
 
-
             if (string.IsNullOrWhiteSpace(product.Name))
+            {
                 result.Errors.Add(ProductValidationError.EmptyName);
+            }
+            else
             {
                 if (product.Name.Length > 64)
                     result.Errors.Add(ProductValidationError.NameTooLong);
@@ -27,17 +29,36 @@ namespace AccountingSystem.Application.Validation.Products
             }
 
             if (product.Price <= 0)
-                result.Errors.Add(ProductValidationError.InvalidPrice);
-
-            if (string.IsNullOrWhiteSpace(product.Category.Name))
-                result.Errors.Add(ProductValidationError.EmptyCategory);
             {
-                if (product.Category.Name.Length > 64)
-                    result.Errors.Add(ProductValidationError.CategoryTooLong);
-
-                if (products.Exists(x => x.Category.Name == product.Category.Name && x.Category.Id != product.Category.Id))
-                    result.Errors.Add(ProductValidationError.DuplicateCategory);
+                result.Errors.Add(ProductValidationError.InvalidPrice);
             }
+
+            if (product.Category == null)
+            {
+                result.Errors.Add(ProductValidationError.EmptyCategory);
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(product.Category.Name))
+                {
+                    result.Errors.Add(ProductValidationError.EmptyCategory);
+                }
+                else
+                {
+                    if (product.Category.Name.Length > 64)
+                        result.Errors.Add(ProductValidationError.CategoryTooLong);
+
+                    if (products.Exists(x =>
+                        x.Category != null &&
+                        product.Category != null &&
+                        x.Category.Name == product.Category.Name &&
+                        x.Id != product.Id))
+                    {
+                        result.Errors.Add(ProductValidationError.DuplicateCategory);
+                    }
+                }
+            }
+
             return result;
         }
     }

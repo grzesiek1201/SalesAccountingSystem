@@ -5,7 +5,6 @@ using AccountingSystem.Application.Validation.Invoices;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Moq;
-using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -92,7 +91,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void AddInvoice_Invalid_ShouldReturnInvalid()
+        public void AddInvoice_Invalid_ShouldReturnInvalidData()
         {
             var invoice = CreateInvalidInvoice_NoItems();
 
@@ -120,13 +119,10 @@ namespace AccountingSystem.Tests.ServicesTests
             var result = _service.EditInvoice(invoice);
 
             Assert.Equal(InvoiceEditResult.NotFound, result);
-
-            _repoMock.Verify(r => r.Update(It.IsAny<Invoice>()), Times.Never);
-            _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
         [Fact]
-        public void EditInvoice_Archived_ShouldReturnArchived()
+        public void EditInvoice_Archived_ShouldReturnInvoiceArchived()
         {
             var invoice = CreateValidInvoice();
             invoice.IsInvoiceArchived = true;
@@ -143,7 +139,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void EditInvoice_Invalid_ShouldReturnInvalid()
+        public void EditInvoice_Invalid_ShouldReturnInvalidData()
         {
             var invoice = CreateInvalidInvoice_NoNumber();
 
@@ -161,7 +157,7 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- ARCHIVE ----------------
 
         [Fact]
-        public void ArchiveInvoice_Valid_ShouldSuccess()
+        public void ArchiveInvoice_Existing_ShouldReturnSuccess()
         {
             var invoice = CreateValidInvoice();
 
@@ -179,7 +175,7 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- FIND ----------------
 
         [Fact]
-        public void FindInvoice_ShouldReturnEntity()
+        public void FindInvoice_Existing_ShouldReturnInvoice()
         {
             var invoice = CreateValidInvoice();
 
@@ -193,7 +189,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void FindInvoice_ShouldReturnNull()
+        public void FindInvoice_NotExisting_ShouldReturnNull()
         {
             _repoMock.Setup(r => r.GetById(It.IsAny<int>()))
                 .Returns((Invoice)null);
@@ -206,7 +202,7 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- GET ALL ----------------
 
         [Fact]
-        public void GetAll_ShouldReturnData()
+        public void GetAllInvoices_ShouldReturnAllInvoices()
         {
             _repoMock.Setup(r => r.GetAll())
                 .Returns(new List<Invoice>

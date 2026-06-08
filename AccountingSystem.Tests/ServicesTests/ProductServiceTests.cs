@@ -4,10 +4,8 @@ using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Products;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
-using Castle.Core.Resource;
 using Moq;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Xunit;
 
 namespace AccountingSystem.Tests.ServicesTests
@@ -19,7 +17,6 @@ namespace AccountingSystem.Tests.ServicesTests
         private readonly ProductValidator _validator;
 
         private readonly ProductService _service;
-
 
         public ProductServiceTests()
         {
@@ -60,7 +57,7 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- ADD ----------------
 
         [Fact]
-        public void AddProduct_ValidProduct_ShouldReturnSuccess()
+        public void AddProduct_Valid_ShouldReturnSuccess()
         {
             var product = CreateValidProduct();
 
@@ -76,7 +73,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void AddProduct_InvalidProduct_ShouldReturnInvalidData()
+        public void AddProduct_Invalid_ShouldReturnInvalidData()
         {
             var product = CreateValidProduct();
             product.Price = -10;
@@ -90,7 +87,6 @@ namespace AccountingSystem.Tests.ServicesTests
 
             _repoMock.Verify(r => r.Add(It.IsAny<Product>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
-
         }
 
         [Fact]
@@ -124,11 +120,10 @@ namespace AccountingSystem.Tests.ServicesTests
             _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
-
         // ---------------- EDIT ----------------
 
         [Fact]
-        public void EditProduct_ValidProduct_ShouldReturnSuccess()
+        public void EditProduct_Valid_ShouldReturnSuccess()
         {
             var product = CreateValidProduct();
 
@@ -147,23 +142,23 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void EditProduct_ProductNotFound_ShouldReturnNotFound()
+        public void EditProduct_NotFound_ShouldReturnNotFound()
         {
             var product = CreateValidProduct();
 
-            _repoMock.Setup(r => r.GetById(product.Id))
+            _repoMock.Setup(r => r.GetById(It.IsAny<int>()))
                 .Returns((Product)null);
 
             var result = _service.EditProduct(product);
 
             Assert.Equal(ProductEditResult.NotFound, result);
 
-            _repoMock.Verify(r => r.Add(It.IsAny<Product>()), Times.Never);
+            _repoMock.Verify(r => r.Update(It.IsAny<Product>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
         [Fact]
-        public void EditProduct_ArchivedProduct_ShouldReturnProductArchived()
+        public void EditProduct_Archived_ShouldReturnProductArchived()
         {
             var product = CreateValidProduct();
             product.IsProductArchived = true;
@@ -175,12 +170,12 @@ namespace AccountingSystem.Tests.ServicesTests
 
             Assert.Equal(ProductEditResult.ProductArchived, result);
 
-            _repoMock.Verify(r => r.Add(It.IsAny<Product>()), Times.Never);
+            _repoMock.Verify(r => r.Update(It.IsAny<Product>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
         [Fact]
-        public void EditProduct_InvalidProduct_ShouldReturnInvalidData()
+        public void EditProduct_Invalid_ShouldReturnInvalidData()
         {
             var product = CreateValidProduct();
             product.Price = -10;
@@ -195,14 +190,14 @@ namespace AccountingSystem.Tests.ServicesTests
 
             Assert.Equal(ProductEditResult.InvalidData, result);
 
-            _repoMock.Verify(r => r.Add(It.IsAny<Product>()), Times.Never);
+            _repoMock.Verify(r => r.Update(It.IsAny<Product>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
         // ---------------- ARCHIVE ----------------
 
         [Fact]
-        public void ArchiveProduct_ExistingProduct_ShouldReturnSuccess()
+        public void ArchiveProduct_Existing_ShouldReturnSuccess()
         {
             var product = CreateValidProduct();
 
@@ -218,7 +213,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void ArchiveProduct_NonExistingProduct_ShouldReturnNotFound()
+        public void ArchiveProduct_NotFound_ShouldReturnNotFound()
         {
             _repoMock.Setup(r => r.GetById(It.IsAny<int>()))
                 .Returns((Product)null);
@@ -227,14 +222,14 @@ namespace AccountingSystem.Tests.ServicesTests
 
             Assert.Equal(ArchiveProductResult.NotFound, result);
 
-            _repoMock.Verify(r => r.Add(It.IsAny<Product>()), Times.Never);
+            _repoMock.Verify(r => r.Update(It.IsAny<Product>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
         // ---------------- FIND ----------------
 
         [Fact]
-        public void FindProduct_ExistingId_ShouldReturnProduct()
+        public void FindProduct_Existing_ShouldReturnProduct()
         {
             var product = CreateValidProduct();
 
@@ -247,11 +242,11 @@ namespace AccountingSystem.Tests.ServicesTests
             Assert.Equal(product.Id, result.Id);
         }
 
-        [Fact] 
-        public void FindProduct_NonExistingId_ShouldReturnNull()
+        [Fact]
+        public void FindProduct_NotExisting_ShouldReturnNull()
         {
             _repoMock.Setup(r => r.GetById(It.IsAny<int>()))
-              .Returns((Product)null);
+                .Returns((Product)null);
 
             var result = _service.FindProduct(1);
 

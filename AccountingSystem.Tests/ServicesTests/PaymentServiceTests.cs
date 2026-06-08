@@ -25,8 +25,7 @@ namespace AccountingSystem.Tests.ServicesTests
             _invoiceRepoMock = new Mock<IInvoiceRepository>();
             _uowMock = new Mock<IUnitOfWork>();
 
-            _invoiceServiceMock = new Mock<InvoiceService>(
-                null, null, null);
+            _invoiceServiceMock = new Mock<InvoiceService>(null, null, null);
 
             _service = new PaymentService(
                 _paymentRepoMock.Object,
@@ -81,11 +80,11 @@ namespace AccountingSystem.Tests.ServicesTests
             var invoice = CreateValidInvoice();
             invoice.IsInvoiceArchived = true;
 
-            var payment = CreateValidPayment();
-
             _invoiceRepoMock
                 .Setup(r => r.GetById(invoice.Id))
                 .Returns(invoice);
+
+            var payment = CreateValidPayment();
 
             var result = _service.AddPayment(invoice.Id, payment);
 
@@ -120,10 +119,7 @@ namespace AccountingSystem.Tests.ServicesTests
         {
             var invoice = CreateValidInvoice();
 
-            invoice.Payments.Add(new Payment
-            {
-                Amount = 900m
-            });
+            invoice.Payments.Add(new Payment { Amount = 900m });
 
             var payment = CreateValidPayment();
             payment.Amount = 200m;
@@ -141,7 +137,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void AddPayment_ValidPayment_ShouldReturnSuccess()
+        public void AddPayment_Valid_ShouldReturnSuccess()
         {
             var invoice = CreateValidInvoice();
             var payment = CreateValidPayment();
@@ -161,17 +157,15 @@ namespace AccountingSystem.Tests.ServicesTests
         // ---------------- GET PAYMENTS ----------------
 
         [Fact]
-        public void GetPaymentsForInvoice_ShouldReturnOnlyInvoicePayments()
+        public void GetPaymentsForInvoice_ShouldReturnInvoicePayments()
         {
-            var payments = new List<Payment>
-            {
-                new Payment { Id = 1, InvoiceId = 1, Amount = 100 },
-                new Payment { Id = 2, InvoiceId = 1, Amount = 200 }
-            };
-
             _paymentRepoMock
                 .Setup(r => r.GetByInvoiceId(1))
-                .Returns(payments);
+                .Returns(new List<Payment>
+                {
+                    new Payment { Id = 1, InvoiceId = 1, Amount = 100 },
+                    new Payment { Id = 2, InvoiceId = 1, Amount = 200 }
+                });
 
             var result = _service.GetPaymentsForInvoice(1);
 
@@ -194,7 +188,7 @@ namespace AccountingSystem.Tests.ServicesTests
         }
 
         [Fact]
-        public void DeletePayment_ValidPayment_ShouldDeletePayment()
+        public void DeletePayment_Valid_ShouldReturnSuccess()
         {
             var payment = new Payment
             {
@@ -203,15 +197,13 @@ namespace AccountingSystem.Tests.ServicesTests
                 Amount = 100
             };
 
-            var invoice = CreateValidInvoice();
-
             _paymentRepoMock
                 .Setup(r => r.GetById(payment.Id))
                 .Returns(payment);
 
             _invoiceRepoMock
                 .Setup(r => r.GetById(payment.InvoiceId))
-                .Returns(invoice);
+                .Returns(CreateValidInvoice());
 
             _service.DeletePayment(payment.Id);
 
