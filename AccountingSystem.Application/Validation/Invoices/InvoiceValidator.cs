@@ -1,9 +1,6 @@
 using AccountingSystem.Domain.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AccountingSystem.Application.Validation.Invoices
 {
@@ -23,45 +20,48 @@ namespace AccountingSystem.Application.Validation.Invoices
                 result.Errors.Add(InvoiceValidationError.EmptyCustomer);
 
             if (invoice.Items == null || invoice.Items.Count == 0)
-            {
                 result.Errors.Add(InvoiceValidationError.NoItems);
-                return result;
-            }
 
-            foreach (var item in invoice.Items)
+            else
             {
-                if (item == null)
+                foreach (var item in invoice.Items)
                 {
-                    result.Errors.Add(InvoiceValidationError.InvoiceItemNull);
-                    continue;
+                    if (item == null)
+                    {
+                        result.Errors.Add(InvoiceValidationError.InvoiceItemNull);
+                        continue;
+                    }
+
+                    if (item.Product == null)
+                        result.Errors.Add(InvoiceValidationError.EmptyProduct);
+
+                    if (item.Quantity <= 0)
+                        result.Errors.Add(InvoiceValidationError.InvalidQuantity);
+
+                    if (item.BaseUnitPrice <= 0)
+                        result.Errors.Add(InvoiceValidationError.InvalidUnitPrice);
+
+                    if (item.DiscountPercent < 0 || item.DiscountPercent > 100)
+                        result.Errors.Add(InvoiceValidationError.InvalidDiscountPercent);
                 }
 
-                if (item.Product == null)
-                    result.Errors.Add(InvoiceValidationError.EmptyProduct);
+                var duplicatedProducts = invoice.Items
+                    .Where(i => i?.Product != null)
+                    .GroupBy(i => i.Product.Id)
+                    .Any(g => g.Count() > 1);
 
-                if (item.Quantity <= 0)
-                    result.Errors.Add(InvoiceValidationError.InvalidQuantity);
-
-                if (item.BaseUnitPrice <= 0)
-                    result.Errors.Add(InvoiceValidationError.InvalidUnitPrice);
-
-                if (item.DiscountPercent < 0)
-                    result.Errors.Add(InvoiceValidationError.InvalidDiscountPercent);
+                if (duplicatedProducts)
+                    result.Errors.Add(InvoiceValidationError.DuplicateProduct);
             }
-
-            var duplicatedProducts = invoice.Items
-                .Where(i => i?.Product != null)
-                .GroupBy(i => i.Product.Id)
-                .Any(g => g.Count() > 1);
-
-            if (duplicatedProducts)
-                result.Errors.Add(InvoiceValidationError.DuplicateProduct);
 
             if (invoice.IssueDate == default)
                 result.Errors.Add(InvoiceValidationError.InvalidIssueDate);
 
             if (invoice.DueDate == default)
                 result.Errors.Add(InvoiceValidationError.InvalidDueDate);
+
+            if (invoice.DateCreated == default)
+                result.Errors.Add(InvoiceValidationError.InvalidDateCreated);
 
             if (string.IsNullOrWhiteSpace(invoice.InvoiceNumber))
                 result.Errors.Add(InvoiceValidationError.EmptyInvoiceNumber);

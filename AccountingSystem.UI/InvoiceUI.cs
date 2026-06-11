@@ -233,6 +233,7 @@ namespace AccountingSystem.UI
                 InvoiceValidationError.InvalidStatus => "Invalid status",
                 InvoiceValidationError.InvalidIssueDate => "Invalid issuedate",
                 InvoiceValidationError.InvalidDueDate => "Invalid due date",
+                InvoiceValidationError.InvalidDateCreated => "Invalid created date",
                 InvoiceValidationError.DuplicateProduct => "Duplicate product",
                 InvoiceValidationError.EmptyProduct => "Product is required",
                 InvoiceValidationError.InvalidTotalAmount => "Invalid total",

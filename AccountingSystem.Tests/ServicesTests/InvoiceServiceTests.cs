@@ -36,25 +36,26 @@ namespace AccountingSystem.Tests.ServicesTests
             return new Invoice
             {
                 Id = 1,
-                InvoiceNumber = "INV-2026-001",
+                InvoiceNumber = "F-2026-001",
                 Status = InvoiceStatus.Draft,
+
                 DateCreated = new DateTime(2026, 1, 1),
+
                 IssueDate = new DateTime(2026, 1, 1),
                 DueDate = new DateTime(2026, 1, 15),
-                TotalAmount = 200m,
 
                 Customer = new Customer { Id = 1 },
 
                 Items = new List<InvoiceItem>
-                {
-                    new InvoiceItem
-                    {
-                        Product = new Product { Id = 1 },
-                        Quantity = 2,
-                        BaseUnitPrice = 100m,
-                        DiscountPercent = 0
-                    }
-                }
+        {
+            new InvoiceItem
+            {
+                Product = new Product { Id = 1 },
+                Quantity = 2,
+                BaseUnitPrice = 100m,
+                DiscountPercent = 10
+            }
+        }
             };
         }
 

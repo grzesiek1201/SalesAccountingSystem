@@ -46,10 +46,13 @@ namespace AccountingSystem.Application.Validation.Orders
                     result.Errors.Add(OrderValidationError.InvalidUnitPrice);
 
                 if (item.DiscountPercent == null)
+                {
                     result.Errors.Add(OrderValidationError.DiscountEmpty);
-
-                if (item.DiscountPercent < 0)
+                }
+                else if (item.DiscountPercent < 0 || item.DiscountPercent > 100)
+                {
                     result.Errors.Add(OrderValidationError.DiscountInvalid);
+                }
             }
 
             var duplicatedProducts = order.Items

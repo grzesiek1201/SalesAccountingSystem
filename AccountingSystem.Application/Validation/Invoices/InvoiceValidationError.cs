@@ -11,6 +11,7 @@ public enum InvoiceValidationError
     InvalidDiscountPercent,
     InvalidIssueDate,
     InvalidDueDate,
+    InvalidDateCreated,
     DuplicateProduct,
     InvalidStatus,
     InvalidTotalAmount
