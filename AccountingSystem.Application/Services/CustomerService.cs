@@ -4,6 +4,9 @@ using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Validation.Customers;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AccountingSystem.Application.Services
 {
@@ -12,25 +15,31 @@ namespace AccountingSystem.Application.Services
         private readonly ICustomerRepository _repository;
         private readonly CustomerValidator _validator;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<CustomerService> _logger;
 
         public CustomerService(
             ICustomerRepository repository,
             CustomerValidator validator,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ILogger<CustomerService> logger)
         {
             _repository = repository;
             _validator = validator;
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public CustomerAddResponse AddCustomer(Customer customer)
         {
-            var existing = _repository.GetAll();
+            _logger.LogInformation("Starting AddCustomer. Email: {Email}", customer.Email);
 
+            var existing = _repository.GetAll();
             var result = _validator.Validate(customer, existing);
 
             if (!result.IsValid)
             {
+                _logger.LogWarning("AddCustomer validation failed. Errors: {Errors}", result.Errors);
+
                 return new CustomerAddResponse
                 {
                     Result = CustomerAddResult.InvalidData,
@@ -41,6 +50,8 @@ namespace AccountingSystem.Application.Services
             _repository.Add(customer);
             _unitOfWork.Save();
 
+            _logger.LogInformation("Customer added successfully. Id: {CustomerId}", customer.Id);
+
             return new CustomerAddResponse
             {
                 Result = CustomerAddResult.Success
@@ -49,13 +60,21 @@ namespace AccountingSystem.Application.Services
 
         public CustomerEditResult EditCustomer(Customer customer)
         {
+            _logger.LogInformation("Starting EditCustomer. Id: {CustomerId}", customer.Id);
+
             var existing = _repository.GetById(customer.Id);
 
             if (existing == null)
+            {
+                _logger.LogWarning("Customer not found. Id: {CustomerId}", customer.Id);
                 return CustomerEditResult.NotFound;
+            }
 
             if (existing.IsCustomerArchived)
+            {
+                _logger.LogWarning("Attempt to edit archived customer. Id: {CustomerId}", customer.Id);
                 return CustomerEditResult.CustomerArchived;
+            }
 
             var otherCustomers = _repository
                 .GetAll()
@@ -65,7 +84,12 @@ namespace AccountingSystem.Application.Services
             var result = _validator.Validate(customer, otherCustomers);
 
             if (!result.IsValid)
+            {
+                _logger.LogWarning("EditCustomer validation failed. Id: {CustomerId}, Errors: {Errors}",
+                    customer.Id, result.Errors);
+
                 return CustomerEditResult.InvalidData;
+            }
 
             existing.Name = customer.Name;
             existing.Email = customer.Email;
@@ -76,26 +100,41 @@ namespace AccountingSystem.Application.Services
             _repository.Update(existing);
             _unitOfWork.Save();
 
+            _logger.LogInformation("Customer updated successfully. Id: {CustomerId}", customer.Id);
+
             return CustomerEditResult.Success;
         }
 
         public List<Customer> GetAllCustomers()
-            => _repository.GetAll();
+        {
+            _logger.LogInformation("Fetching all customers");
+            return _repository.GetAll();
+        }
 
         public Customer? FindCustomer(int id)
-            => _repository.GetById(id);
+        {
+            _logger.LogInformation("Finding customer. Id: {CustomerId}", id);
+            return _repository.GetById(id);
+        }
 
         public ArchiveCustomerResult ArchiveCustomer(int id)
         {
+            _logger.LogInformation("Archiving customer. Id: {CustomerId}", id);
+
             var existing = _repository.GetById(id);
 
             if (existing == null)
+            {
+                _logger.LogWarning("Customer not found for archive. Id: {CustomerId}", id);
                 return ArchiveCustomerResult.NotFound;
+            }
 
             existing.IsCustomerArchived = true;
 
             _repository.Update(existing);
             _unitOfWork.Save();
+
+            _logger.LogInformation("Customer archived successfully. Id: {CustomerId}", id);
 
             return ArchiveCustomerResult.Success;
         }
