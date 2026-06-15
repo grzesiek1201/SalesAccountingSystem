@@ -1,5 +1,17 @@
-﻿# Changelog
+# Changelog
 
+
+## [0.2.0] - 2026-06-15
+### Added
+- Add quotation to order conversion workflow
+- Add document number sequence generation for quotations, orders and invoices
+- Add mapper for quotation to order transformation
+- Add tests updates for quotation and order flow
+
+### Changed
+- Improve quotation validation rules
+- Refactor quotation flow and document handling
+---
 
 ## [0.1.0] - 2026-05-27
 ### Added
