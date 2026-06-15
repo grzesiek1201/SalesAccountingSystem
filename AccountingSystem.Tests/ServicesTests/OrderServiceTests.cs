@@ -1,9 +1,11 @@
 ﻿using AccountingSystem.Application.Interfaces;
+using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Orders;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Generic;
 using Xunit;
@@ -14,20 +16,24 @@ namespace AccountingSystem.Tests.ServicesTests
     {
         private readonly Mock<IOrderRepository> _repoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
-        private readonly OrderValidator _validator;
+        private readonly Mock<ILogger<OrderService>> _loggerMock;
 
+        private readonly OrderValidator _validator;
         private readonly OrderService _service;
 
         public OrderServiceTests()
         {
             _repoMock = new Mock<IOrderRepository>();
             _uowMock = new Mock<IUnitOfWork>();
+            _loggerMock = new Mock<ILogger<OrderService>>();
+           
             _validator = new OrderValidator();
 
             _service = new OrderService(
                 _repoMock.Object,
                 _validator,
-                _uowMock.Object
+                _uowMock.Object,
+                _loggerMock.Object
             );
         }
 

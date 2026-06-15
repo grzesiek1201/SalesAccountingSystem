@@ -2,8 +2,10 @@
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Quotations;
+using AccountingSystem.Application.Mappers;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace AccountingSystem.Tests.ServicesTests
@@ -12,6 +14,10 @@ namespace AccountingSystem.Tests.ServicesTests
     {
         private readonly Mock<IQuotationRepository> _repoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
+        private readonly Mock<ILogger<QuotationService>> _loggerMock;
+        private readonly Mock<QuotationToOrderMapper> _mapperMock;
+
+
         private readonly QuotationValidator _validator;
         private readonly QuotationService _service;
 
@@ -19,12 +25,18 @@ namespace AccountingSystem.Tests.ServicesTests
         {
             _repoMock = new Mock<IQuotationRepository>();
             _uowMock = new Mock<IUnitOfWork>();
+            _loggerMock = new Mock<ILogger<QuotationService>>();
+            _mapperMock = new Mock<QuotationToOrderMapper>();
+
             _validator = new QuotationValidator();
 
             _service = new QuotationService(
                 _repoMock.Object,
                 _validator,
-                _uowMock.Object
+                _uowMock.Object,
+                _loggerMock.Object,
+                _mapperMock.Object
+
             );
         }
 

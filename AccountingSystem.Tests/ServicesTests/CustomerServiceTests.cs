@@ -4,6 +4,7 @@ using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Customers;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Generic;
 using Xunit;
@@ -14,20 +15,23 @@ namespace AccountingSystem.Tests.ServicesTests
     {
         private readonly Mock<ICustomerRepository> _repoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
-        private readonly CustomerValidator _validator;
+        private readonly Mock<ILogger<CustomerService>> _loggerMock;
 
+        private readonly CustomerValidator _validator;
         private readonly CustomerService _service;
 
         public CustomerServiceTests()
         {
             _repoMock = new Mock<ICustomerRepository>();
             _uowMock = new Mock<IUnitOfWork>();
+            _loggerMock = new Mock<ILogger<CustomerService>>();
             _validator = new CustomerValidator();
 
             _service = new CustomerService(
                 _repoMock.Object,
                 _validator,
-                _uowMock.Object
+                _uowMock.Object,
+                _loggerMock.Object
             );
         }
 
