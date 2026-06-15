@@ -140,14 +140,15 @@ namespace AccountingSystem.UI
         {
             RunMenu(
                 "QUOTATION MENU",
-                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, r - back",
+                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, 6- Convert, r - back",
                 new Dictionary<string, Action>
                 {
                     { "1", _quotationUI.AddQuotationFlow },
                     { "2", _quotationUI.EditQuotationFlow },
                     { "3", _quotationUI.ArchiveQuotationFlow },
                     { "4", _quotationUI.FindQuotationFlow },
-                    { "5", _quotationUI.GetAllQuotationsFlow }
+                    { "5", _quotationUI.GetAllQuotationsFlow },
+                    { "6", _quotationUI.ConvertToOrderFlow }
                 });
         }
 

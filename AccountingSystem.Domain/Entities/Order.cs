@@ -13,6 +13,8 @@ namespace AccountingSystem.Domain.Entities
 
         public string OrderNumber { get; set; }
 
+        public int QuotationId { get; set; }
+
         public OrderStatus Status { get; set; }
 
         public DateTime DateCreated { get; set; }

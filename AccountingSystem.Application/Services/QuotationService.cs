@@ -1,5 +1,6 @@
 using AccountingSystem.Application.DTOs;
 using AccountingSystem.Application.Interfaces;
+using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Validation.Quotations;
 using AccountingSystem.Domain.Entities;
@@ -16,31 +17,65 @@ namespace AccountingSystem.Application.Services
         private readonly QuotationValidator _validator;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<QuotationService> _logger;
+        private readonly QuotationToOrderMapper _mapper;
+        private readonly NumberSequenceService _numberSequenceService;
 
         public QuotationService(
             IQuotationRepository quotationRepository,
             QuotationValidator validator,
             IUnitOfWork unitOfWork,
-            ILogger<QuotationService> logger)
+            ILogger<QuotationService> logger,
+            QuotationToOrderMapper mapper)
         {
             _quotationRepository = quotationRepository;
             _validator = validator;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _mapper = mapper;
         }
+
+        // ================= CONVERT =================
+
+        public ConvertQuotationResult ConvertToOrder(int id)
+        {
+            _logger.LogInformation("Converting quotation. Id: {QuotationId}", id);
+
+            var existing = _quotationRepository.GetById(id);
+
+            if (existing == null)
+                return ConvertQuotationResult.NotFound;
+
+            if (existing.IsQuotationArchived)
+                return ConvertQuotationResult.InvalidData;
+
+            if (existing.Status != QuotationStatus.Accepted)
+                return ConvertQuotationResult.InvalidData;
+
+            if (existing.Status == QuotationStatus.ConvertedToOrder)
+                return ConvertQuotationResult.InvalidData;
+
+            existing.Status = QuotationStatus.ConvertedToOrder;
+
+            _quotationRepository.Update(existing);
+            _unitOfWork.Save();
+
+            _logger.LogInformation("Quotation converted successfully. Id: {QuotationId}", id);
+
+            return ConvertQuotationResult.Success;
+        }
+
+        // ================= ADD =================
 
         public QuotationAddResponse AddQuotation(Quotation quotation)
         {
-            _logger.LogInformation("Starting AddQuotation for CustomerId: {CustomerId}", quotation.Customer?.Id);
+            _logger.LogInformation("AddQuotation. CustomerId: {CustomerId}", quotation.CustomerId);
 
             var quotations = _quotationRepository.GetAll();
-
             var result = _validator.Validate(quotation, quotations);
 
             if (!result.IsValid)
             {
-                _logger.LogWarning("AddQuotation validation failed. Errors: {Errors}", result.Errors);
-
+                _logger.LogWarning("Validation failed");
                 return new QuotationAddResponse
                 {
                     Result = QuotationAddResult.InvalidData,
@@ -51,45 +86,32 @@ namespace AccountingSystem.Application.Services
             _quotationRepository.Add(quotation);
             _unitOfWork.Save();
 
-            _logger.LogInformation("Quotation added successfully. QuotationId: {QuotationId}", quotation.Id);
-
             return new QuotationAddResponse
             {
                 Result = QuotationAddResult.Success
             };
         }
 
+        // ================= EDIT =================
+
         public QuotationEditResult EditQuotation(Quotation quotation)
         {
-            _logger.LogInformation("Starting EditQuotation. QuotationId: {QuotationId}", quotation.Id);
-
             var existing = _quotationRepository.GetById(quotation.Id);
 
             if (existing == null)
-            {
-                _logger.LogWarning("Quotation not found. Id: {QuotationId}", quotation.Id);
                 return QuotationEditResult.NotFound;
-            }
 
             if (existing.IsQuotationArchived)
-            {
-                _logger.LogWarning("Attempt to edit archived quotation. Id: {QuotationId}", quotation.Id);
                 return QuotationEditResult.QuotationArchived;
-            }
 
-            var otherQuotations = (_quotationRepository.GetAll() ?? new List<Quotation>())
+            var other = _quotationRepository.GetAll()
                 .Where(x => x.Id != quotation.Id)
                 .ToList();
 
-            var result = _validator.Validate(quotation, otherQuotations);
+            var result = _validator.Validate(quotation, other);
 
             if (!result.IsValid)
-            {
-                _logger.LogWarning("EditQuotation validation failed. Id: {QuotationId}, Errors: {Errors}",
-                    quotation.Id, result.Errors);
-
                 return QuotationEditResult.InvalidData;
-            }
 
             existing.Status = quotation.Status;
             existing.Customer = quotation.Customer;
@@ -97,45 +119,39 @@ namespace AccountingSystem.Application.Services
             _quotationRepository.Update(existing);
             _unitOfWork.Save();
 
-            _logger.LogInformation("Quotation edited successfully. Id: {QuotationId}", quotation.Id);
-
             return QuotationEditResult.Success;
         }
 
-        public List<Quotation> GetAllQuotations()
-        {
-            _logger.LogInformation("Fetching all quotations");
+        // ================= READ =================
 
-            return _quotationRepository.GetAll();
-        }
+        public List<Quotation> GetAllQuotations()
+            => _quotationRepository.GetAll();
 
         public Quotation? FindQuotation(int id)
-        {
-            _logger.LogInformation("Finding quotation by Id: {QuotationId}", id);
+            => _quotationRepository.GetById(id);
 
-            return _quotationRepository.GetById(id);
-        }
+        // ================= ARCHIVE =================
 
         public ArchiveQuotationResult ArchiveQuotation(int id)
         {
-            _logger.LogInformation("Archiving quotation. Id: {QuotationId}", id);
-
             var existing = _quotationRepository.GetById(id);
 
             if (existing == null)
-            {
-                _logger.LogWarning("Quotation not found for archive. Id: {QuotationId}", id);
                 return ArchiveQuotationResult.NotFound;
-            }
 
             existing.IsQuotationArchived = true;
 
             _quotationRepository.Update(existing);
             _unitOfWork.Save();
 
-            _logger.LogInformation("Quotation archived successfully. Id: {QuotationId}", id);
-
             return ArchiveQuotationResult.Success;
+        }
+
+        // ================= DOMAIN FLOW (RECOMMENDED PLACE) =================
+
+        public Order CreateOrderFromQuotation(Quotation quotation)
+        {
+            return _mapper.Map(quotation);
         }
     }
 }

@@ -10,6 +10,8 @@ namespace AccountingSystem.Domain.Enums
         Active,
         Inactive,
         Canceled,
+        Accepted,
+        ConvertedToOrder,
         Expired
     }
 }

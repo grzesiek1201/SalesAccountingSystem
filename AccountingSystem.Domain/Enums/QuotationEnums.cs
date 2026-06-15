@@ -15,13 +15,21 @@ namespace AccountingSystem.Domain.Enums
         Success,
         NotFound,
         InvalidData,
-        QuotationArchived
+        QuotationArchived,
+        QuotationConverted
     }
 
     public enum ArchiveQuotationResult
     {
         Success,
         NotFound,
+    }
+
+    public enum ConvertQuotationResult
+    {
+        Success,
+        NotFound,
+        InvalidData,
     }
 
     public enum ValidateQuotationResult

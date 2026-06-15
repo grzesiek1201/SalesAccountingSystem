@@ -9,25 +9,16 @@ namespace AccountingSystem.UI
     public class QuotationUI
     {
         private readonly QuotationService _quotationService;
-        private readonly CustomerService _customerService;
-        private readonly ProductService _productService;
 
-        public QuotationUI(
-            QuotationService quotationService,
-            CustomerService customerService,
-            ProductService productService)
+        public QuotationUI(QuotationService quotationService)
         {
             _quotationService = quotationService;
-            _customerService = customerService;
-            _productService = productService;
         }
 
         public void AddQuotationFlow()
         {
             var quotation = GetQuotationInput();
             if (quotation == null) return;
-
-            AddQuotationItemsFlow(quotation);
 
             var response = _quotationService.AddQuotation(quotation);
 
@@ -45,12 +36,14 @@ namespace AccountingSystem.UI
 
         public void EditQuotationFlow()
         {
-            Console.WriteLine("Edit quotation - fill fields below.");
+            Console.WriteLine("Edit quotation");
 
             var quotation = GetQuotationInput();
             if (quotation == null) return;
 
-            _quotationService.EditQuotation(quotation);
+            var result = _quotationService.EditQuotation(quotation);
+
+            Console.WriteLine($"Result: {result}");
         }
 
         public void GetAllQuotationsFlow()
@@ -84,115 +77,76 @@ namespace AccountingSystem.UI
 
             var result = _quotationService.ArchiveQuotation(id);
 
+            Console.WriteLine($"Archive result: {result}");
+        }
+
+        public void ConvertToOrderFlow()
+        {
+            int id = GetQuotationId();
+
+            var result = _quotationService.ConvertToOrder(id);
+
             switch (result)
             {
-                case ArchiveQuotationResult.NotFound:
+                case ConvertQuotationResult.Success:
+                    Console.WriteLine("Converted successfully");
+                    break;
+
+                case ConvertQuotationResult.NotFound:
                     Console.WriteLine("Quotation not found");
                     break;
 
-                case ArchiveQuotationResult.Success:
-                    Console.WriteLine("Quotation archived");
+                case ConvertQuotationResult.InvalidData:
+                    Console.WriteLine("Quotation cannot be converted");
                     break;
             }
         }
 
         // ================= INPUT =================
 
-        private Quotation? GetQuotationInput()
+        private Quotation GetQuotationInput()
         {
             int customerId = GetInt("Customer ID: ");
 
-            var customer = _customerService.FindCustomer(customerId);
+            var items = new List<QuotationItem>();
+            int position = 1;
 
-            if (customer == null)
+            while (true)
             {
-                Console.WriteLine("Customer not found");
-                return null;
+                Console.Write("Add item? (y/n): ");
+                var choice = Console.ReadLine();
+
+                if (choice?.ToLower() != "y")
+                    break;
+
+                int productId = GetInt("Product ID: ");
+                int quantity = GetInt("Quantity: ");
+                decimal unitPrice = GetDecimal("Unit price: ");
+
+                items.Add(new QuotationItem
+                {
+                    Position = position++,
+                    ProductId = productId,
+                    Quantity = quantity,
+                    BaseUnitPrice = unitPrice
+                });
             }
 
             return new Quotation
             {
-                Customer = customer,
+                CustomerId = customerId,
                 DateCreated = DateTime.Now,
                 Status = QuotationStatus.Draft,
-                Items = new List<QuotationItem>()
+                Items = items
             };
-        }
-
-        private void AddQuotationItemsFlow(Quotation quotation)
-        {
-            Console.WriteLine("Add product ID (0 = finish)");
-
-            while (true)
-            {
-                int productId = GetInt("Product ID: ");
-
-                if (productId == 0)
-                    break;
-
-                var product = _productService.FindProduct(productId);
-
-                if (product == null)
-                {
-                    Console.WriteLine("Product not found");
-                    continue;
-                }
-
-                int qty = GetInt("Quantity: ");
-                decimal discount = GetDecimal("Discount %: ");
-
-                var unitPrice = product.Price * (1 - discount / 100m);
-
-                quotation.Items.Add(new QuotationItem
-                {
-                    Position = quotation.Items.Count + 1,
-                    Product = product,
-                    Quantity = qty,
-                    DiscountPercent = discount,
-                    BaseUnitPrice = unitPrice
-                });
-
-                Console.WriteLine("Item added");
-            }
         }
 
         // ================= HELPERS =================
 
-        private int GetQuotationId()
-        {
-            return GetInt("Quotation ID: ");
-        }
-
-        private int GetInt(string label)
-        {
-            int value;
-            Console.Write(label);
-
-            while (!int.TryParse(Console.ReadLine(), out value))
-            {
-                Console.Write("Invalid number. Try again: ");
-            }
-
-            return value;
-        }
-
-        private decimal GetDecimal(string label)
-        {
-            decimal value;
-            Console.Write(label);
-
-            while (!decimal.TryParse(Console.ReadLine(), out value))
-            {
-                Console.Write("Invalid number. Try again: ");
-            }
-
-            return value;
-        }
-
         private void PrintQuotation(Quotation q)
         {
             Console.WriteLine($"Id: {q.Id}");
-            Console.WriteLine($"Customer: {q.Customer?.Name}");
+            Console.WriteLine($"CustomerId: {q.CustomerId}");
             Console.WriteLine($"Date: {q.DateCreated}");
             Console.WriteLine($"Status: {q.Status}");
 
@@ -203,7 +157,7 @@ namespace AccountingSystem.UI
             foreach (var item in q.Items)
             {
                 Console.WriteLine(
-                    $"{item.Position} | {item.Product?.Name} | Qty: {item.Quantity} | Unit: {item.BaseUnitPrice} | Total: {item.Total}"
+                    $"{item.Position} | ProductId: {item.ProductId} | Qty: {item.Quantity} | Unit: {item.BaseUnitPrice} | Total: {item.Total}"
                 );
 
                 total += item.Total;
@@ -228,8 +182,27 @@ namespace AccountingSystem.UI
                 QuotationValidationError.InvalidTotalAmount => "Invalid total",
                 QuotationValidationError.ExpiredQuotation => "Quotation expired",
                 QuotationValidationError.EmptyQuotationNumber => "Quotation number missing",
+                QuotationValidationError.AlreadyConverted => "Quotation already converted",
                 _ => "Unknown error"
             };
+        }
+
+        private int GetQuotationId()
+        {
+            Console.Write("Quotation ID: ");
+            return int.Parse(Console.ReadLine() ?? "0");
+        }
+
+        private int GetInt(string label)
+        {
+            Console.Write(label);
+            return int.Parse(Console.ReadLine() ?? "0");
+        }
+
+        private decimal GetDecimal(string label)
+        {
+            Console.Write(label);
+            return decimal.Parse(Console.ReadLine() ?? "0");
         }
     }
 }

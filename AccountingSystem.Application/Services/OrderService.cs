@@ -31,7 +31,7 @@ namespace AccountingSystem.Application.Services
 
         public OrderAddResponse AddOrder(Order order)
         {
-            _logger.LogInformation("Starting AddOrder. CustomerId: {CustomerId}", order.Customer?.Id);
+            _logger.LogInformation("Starting AddOrder. CustomerId: {CustomerId}", order.CustomerId);
 
             var orders = _orderRepository.GetAll();
             var result = _validator.Validate(order, orders);
@@ -92,7 +92,7 @@ namespace AccountingSystem.Application.Services
             }
 
             existing.Status = order.Status;
-            existing.Customer = order.Customer;
+            existing.CustomerId = order.CustomerId;
 
             _orderRepository.Update(existing);
             _unitOfWork.Save();
