@@ -16,7 +16,7 @@ namespace AccountingSystem.Application.Validation.Quotations
                 return result;
             }
 
-            if (quotation.Customer == null)
+            if (quotation.CustomerId <= 0)
                 result.Errors.Add(QuotationValidationError.EmptyCustomer);
 
             if (quotation.Items == null || quotation.Items.Count == 0)
@@ -33,7 +33,7 @@ namespace AccountingSystem.Application.Validation.Quotations
                     continue;
                 }
 
-                if (item.Product == null)
+                if (item.ProductId <= 0)
                     result.Errors.Add(QuotationValidationError.EmptyProduct);
 
                 if (item.Quantity <= 0)
@@ -42,16 +42,14 @@ namespace AccountingSystem.Application.Validation.Quotations
                 if (item.BaseUnitPrice <= 0)
                     result.Errors.Add(QuotationValidationError.InvalidUnitPrice);
 
-                if (item.DiscountPercent == null)
-                    result.Errors.Add(QuotationValidationError.DiscountEmpty);
-
                 if (item.DiscountPercent < 0 || item.DiscountPercent > 100)
                     result.Errors.Add(QuotationValidationError.DiscountInvalid);
+
             }
 
             var duplicatedProducts = quotation.Items
-                .Where(i => i?.Product != null)
-                .GroupBy(i => i.Product.Id)
+                .Where(i => i != null)
+                .GroupBy(i => i.ProductId)
                 .Any(g => g.Count() > 1);
 
             if (duplicatedProducts)
