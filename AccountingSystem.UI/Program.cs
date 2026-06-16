@@ -14,6 +14,7 @@ using AccountingSystem.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using AccountingSystem.Application.Mappers;
 
 
 namespace AccountingSystem
@@ -31,6 +32,9 @@ namespace AccountingSystem
                             "Server=localhost\\SQLEXPRESS;Database=AccountingSystemDb;Trusted_Connection=True;TrustServerCertificate=True;"
                             ));
 
+                    services.AddScoped<NumberSequenceService>();
+                    services.AddScoped<QuotationToOrderMapper>();
+
                     // VALIDATORS
                     services.AddScoped<CustomerValidator>();
                     services.AddScoped<ProductValidator>();
@@ -42,8 +46,8 @@ namespace AccountingSystem
                     // SERVICES
                     services.AddScoped<CustomerService>();
                     services.AddScoped<ProductService>();
-                    services.AddScoped<QuotationService>();
                     services.AddScoped<OrderService>();
+                    services.AddScoped<QuotationService>();
                     services.AddScoped<InvoiceService>();
                     services.AddScoped<PaymentService>();
 
@@ -63,6 +67,7 @@ namespace AccountingSystem
                     services.AddScoped<IOrderRepository, OrderRepository>();
                     services.AddScoped<IInvoiceRepository, InvoiceRepository>();
                     services.AddScoped<IPaymentRepository, PaymentRepository>();
+                    services.AddScoped<INumberSequenceRepository, NumberSequenceRepository>();
 
                 })
                 .Build();

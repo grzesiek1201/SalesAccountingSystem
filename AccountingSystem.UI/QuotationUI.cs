@@ -15,45 +15,81 @@ namespace AccountingSystem.UI
             _quotationService = quotationService;
         }
 
+        // ================= ADD =================
+
         public void AddQuotationFlow()
         {
-            var quotation = GetQuotationInput();
-            if (quotation == null) return;
+            int customerId = GetCustomerIdInput();
+            var items = GetQuotationItemsInput();
+
+            var quotation = new Quotation
+            {
+                CustomerId = customerId,
+                DateCreated = DateTime.Now,
+                Status = QuotationStatus.Draft,
+                Items = items
+            };
 
             var response = _quotationService.AddQuotation(quotation);
 
             if (!response.IsSuccess)
             {
                 foreach (var error in response.Errors)
-                {
                     Console.WriteLine(GetQuotationErrorMessage(error));
-                }
+
                 return;
             }
 
             Console.WriteLine("Quotation added successfully");
         }
 
+        // ================= EDIT =================
+
         public void EditQuotationFlow()
         {
             Console.WriteLine("Edit quotation");
 
-            var quotation = GetQuotationInput();
-            if (quotation == null) return;
+            int quotationId = GetQuotationId();
+            var items = GetQuotationItemsInput();
+
+            var quotation = new Quotation
+            {
+                Id = quotationId,
+                Items = items.Any() ? items : null
+            };
 
             var result = _quotationService.EditQuotation(quotation);
 
             Console.WriteLine($"Result: {result}");
         }
 
+        public void EditStatusFlow()
+        {
+            Console.WriteLine("Edit quotation status");
+
+            int quotationId = GetQuotationId();
+
+            var status = GetStatusInput();
+
+            var quotation = new Quotation
+            {
+                Id = quotationId,
+                Status = status
+            };
+
+            var result = _quotationService.ChangeQuotationStatus(quotationId, status);
+
+            Console.WriteLine($"Result: {result}");
+        }
+
+        // ================= READ =================
+
         public void GetAllQuotationsFlow()
         {
             var quotations = _quotationService.GetAllQuotations();
 
             foreach (var q in quotations)
-            {
                 PrintQuotation(q);
-            }
         }
 
         public void FindQuotationFlow()
@@ -104,12 +140,43 @@ namespace AccountingSystem.UI
 
         // ================= INPUT =================
 
-        private Quotation GetQuotationInput()
+        private QuotationStatus GetStatusInput()
         {
-            int customerId = GetInt("Customer ID: ");
+            Console.WriteLine("Select status:");
+            Console.WriteLine("1 - Draft");
+            Console.WriteLine("2 - Accepted");
+            Console.WriteLine("3 - Canceled");
 
+            int value = GetInt("Option: ");
+
+            return value switch
+            {
+                1 => QuotationStatus.Draft,
+                2 => QuotationStatus.Accepted,
+                3 => QuotationStatus.Canceled,
+                _ => QuotationStatus.Draft
+            };
+        }
+        private int GetCustomerIdInput()
+        {
+            return GetInt("Customer ID: ");
+        }
+
+        private int GetQuotationId()
+        {
+            return GetInt("Quotation ID: ");
+        }
+
+        private List<QuotationItem> GetQuotationItemsInput()
+        {
             var items = new List<QuotationItem>();
             int position = 1;
+
+            Console.Write("Add items? (y/n): ");
+            var start = Console.ReadLine();
+
+            if (start?.ToLower() != "y")
+                return items;
 
             while (true)
             {
@@ -132,16 +199,10 @@ namespace AccountingSystem.UI
                 });
             }
 
-            return new Quotation
-            {
-                CustomerId = customerId,
-                DateCreated = DateTime.Now,
-                Status = QuotationStatus.Draft,
-                Items = items
-            };
+            return items;
         }
 
-        // ================= HELPERS =================
+        // ================= PRINT =================
 
         private void PrintQuotation(Quotation q)
         {
@@ -167,6 +228,8 @@ namespace AccountingSystem.UI
             Console.WriteLine("--------------------------------");
         }
 
+        // ================= ERRORS =================
+
         private string GetQuotationErrorMessage(QuotationValidationError error)
         {
             return error switch
@@ -187,11 +250,7 @@ namespace AccountingSystem.UI
             };
         }
 
-        private int GetQuotationId()
-        {
-            Console.Write("Quotation ID: ");
-            return int.Parse(Console.ReadLine() ?? "0");
-        }
+        // ================= HELPERS =================
 
         private int GetInt(string label)
         {

@@ -38,4 +38,12 @@ namespace AccountingSystem.Domain.Enums
         NotValid
     }
 
+    public enum QuotationStatusResult
+    {
+        Success,
+        NotFound,
+        InvalidOperation,
+
+    }
+
 }

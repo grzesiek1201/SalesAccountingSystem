@@ -29,6 +29,8 @@ namespace AccountingSystem.Application.Services
             _logger = logger;
         }
 
+        // ================= ADD MANUAL =================
+
         public OrderAddResponse AddOrder(Order order)
         {
             _logger.LogInformation("Starting AddOrder. CustomerId: {CustomerId}", order.CustomerId);
@@ -50,7 +52,55 @@ namespace AccountingSystem.Application.Services
             _orderRepository.Add(order);
             _unitOfWork.Save();
 
-            _logger.LogInformation("Order added successfully. OrderId: {OrderId}", order.Id);
+            return new OrderAddResponse
+            {
+                Result = OrderAddResult.Success
+            };
+        }
+
+        // ================= CREATE FROM QUOTATION =================
+
+        public OrderAddResponse CreateFromQuotation(Quotation quotation)
+        {
+            var order = new Order
+            {
+                CustomerId = quotation.CustomerId,
+                DateCreated = DateTime.Now,
+                Status = OrderStatus.Draft,
+                QuotationId = quotation.Id,
+
+                Items = quotation.Items.Select(x => new OrderItem
+                {
+                    Position = x.Position,
+                    ProductId = x.ProductId,
+                    Quantity = x.Quantity,
+                    BaseUnitPrice = x.BaseUnitPrice,
+                    DiscountPercent = x.DiscountPercent
+
+                }).ToList()
+            };
+
+
+            var validation =
+                _validator.Validate(
+                    order,
+                    _orderRepository.GetAll());
+
+
+            if (!validation.IsValid)
+            {
+                return new OrderAddResponse
+                {
+                    Result = OrderAddResult.InvalidData,
+                    Errors = validation.Errors
+                };
+            }
+
+
+            _orderRepository.Add(order);
+
+            _unitOfWork.Save();
+
 
             return new OrderAddResponse
             {
@@ -58,38 +108,26 @@ namespace AccountingSystem.Application.Services
             };
         }
 
+        // ================= EDIT =================
+
         public OrderEditResult EditOrder(Order order)
         {
-            _logger.LogInformation("Starting EditOrder. OrderId: {OrderId}", order.Id);
-
             var existing = _orderRepository.GetById(order.Id);
 
             if (existing == null)
-            {
-                _logger.LogWarning("Order not found. Id: {OrderId}", order.Id);
                 return OrderEditResult.NotFound;
-            }
 
             if (existing.IsOrderArchived)
-            {
-                _logger.LogWarning("Attempt to edit archived order. Id: {OrderId}", order.Id);
                 return OrderEditResult.OrderArchived;
-            }
 
-            var otherOrders = _orderRepository
-                .GetAll()
+            var otherOrders = _orderRepository.GetAll()
                 .Where(x => x.Id != order.Id)
                 .ToList();
 
             var result = _validator.Validate(order, otherOrders);
 
             if (!result.IsValid)
-            {
-                _logger.LogWarning("EditOrder validation failed. Id: {OrderId}, Errors: {Errors}",
-                    order.Id, result.Errors);
-
                 return OrderEditResult.InvalidData;
-            }
 
             existing.Status = order.Status;
             existing.CustomerId = order.CustomerId;
@@ -97,41 +135,30 @@ namespace AccountingSystem.Application.Services
             _orderRepository.Update(existing);
             _unitOfWork.Save();
 
-            _logger.LogInformation("Order edited successfully. Id: {OrderId}", order.Id);
-
             return OrderEditResult.Success;
         }
 
+        // ================= READ =================
+
         public List<Order> GetAllOrders()
-        {
-            _logger.LogInformation("Fetching all orders");
-            return _orderRepository.GetAll();
-        }
+            => _orderRepository.GetAll();
 
         public Order? FindOrder(int id)
-        {
-            _logger.LogInformation("Finding order by Id: {OrderId}", id);
-            return _orderRepository.GetById(id);
-        }
+            => _orderRepository.GetById(id);
+
+        // ================= ARCHIVE =================
 
         public ArchiveOrderResult ArchiveOrder(int id)
         {
-            _logger.LogInformation("Archiving order. Id: {OrderId}", id);
-
             var existing = _orderRepository.GetById(id);
 
             if (existing == null)
-            {
-                _logger.LogWarning("Order not found for archive. Id: {OrderId}", id);
                 return ArchiveOrderResult.NotFound;
-            }
 
             existing.IsOrderArchived = true;
 
             _orderRepository.Update(existing);
             _unitOfWork.Save();
-
-            _logger.LogInformation("Order archived successfully. Id: {OrderId}", id);
 
             return ArchiveOrderResult.Success;
         }

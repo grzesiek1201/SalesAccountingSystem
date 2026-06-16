@@ -110,14 +110,14 @@ namespace AccountingSystem.UI
         {
             RunMenu(
                 "CUSTOMER MENU",
-                "1- Add, 2- Edit, 3- List, 4- Find, 5- Archive, r - back",
+                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, r - back",
                 new Dictionary<string, Action>
                 {
                     { "1", _customerUI.AddCustomerFlow },
                     { "2", _customerUI.EditCustomerFlow },
-                    { "3", _customerUI.GetAllCustomerFlow },
+                    { "3", _customerUI.ArchiveCustomerFlow },
                     { "4", _customerUI.FindCustomerFlow },
-                    { "5", _customerUI.ArchiveCustomerFlow }
+                    { "5", _customerUI.GetAllCustomerFlow }
                 });
         }
 
@@ -140,7 +140,7 @@ namespace AccountingSystem.UI
         {
             RunMenu(
                 "QUOTATION MENU",
-                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, 6- Convert, r - back",
+                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, 6- Convert, 7- Change status, r - back",
                 new Dictionary<string, Action>
                 {
                     { "1", _quotationUI.AddQuotationFlow },
@@ -148,7 +148,8 @@ namespace AccountingSystem.UI
                     { "3", _quotationUI.ArchiveQuotationFlow },
                     { "4", _quotationUI.FindQuotationFlow },
                     { "5", _quotationUI.GetAllQuotationsFlow },
-                    { "6", _quotationUI.ConvertToOrderFlow }
+                    { "6", _quotationUI.ConvertToOrderFlow },
+                    { "7", _quotationUI.EditStatusFlow }
                 });
         }
 

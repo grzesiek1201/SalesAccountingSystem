@@ -16,6 +16,8 @@ namespace AccountingSystem.Infrastructure.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
 
+        public DbSet<NumberSequence> NumberSequences{ get; set; } 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Product>()
