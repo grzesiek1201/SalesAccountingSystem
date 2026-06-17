@@ -19,7 +19,7 @@ namespace AccountingSystem.Application.Validation.Orders
                 return result;
             }
 
-            if (order.Customer == null)
+            if (order.CustomerId <= 0)
                 result.Errors.Add(OrderValidationError.EmptyCustomer);
 
             if (order.Items == null || order.Items.Count == 0)
@@ -36,8 +36,8 @@ namespace AccountingSystem.Application.Validation.Orders
                     continue;
                 }
 
-                if (item.Product == null)
-                    result.Errors.Add(OrderValidationError.EmptyProduct);
+                if (item.ProductId <= 0)
+                    result.Errors.Add(OrderValidationError.EmptyProduct); ;
 
                 if (item.Quantity <= 0)
                     result.Errors.Add(OrderValidationError.InvalidQuantity);
@@ -56,8 +56,8 @@ namespace AccountingSystem.Application.Validation.Orders
             }
 
             var duplicatedProducts = order.Items
-                .Where(i => i?.Product != null)
-                .GroupBy(i => i.Product.Id)
+                .Where(i => i != null)
+                .GroupBy(i => i.ProductId)
                 .Any(g => g.Count() > 1);
 
             if (duplicatedProducts)

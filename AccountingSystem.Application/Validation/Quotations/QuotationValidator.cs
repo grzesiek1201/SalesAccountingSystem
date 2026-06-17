@@ -19,15 +19,11 @@ namespace AccountingSystem.Application.Validation.Quotations
                 return result;
             }
 
-            // ================= COMMON RULES =================
-
             if (quotation.CustomerId <= 0)
                 result.Errors.Add(QuotationValidationError.EmptyCustomer);
 
             if (quotation.DateCreated == default && !isEdit)
                 result.Errors.Add(QuotationValidationError.InvalidDate);
-
-            // ================= CREATE ONLY RULES =================
 
             if (!isEdit)
             {
@@ -40,8 +36,6 @@ namespace AccountingSystem.Application.Validation.Quotations
                 if (string.IsNullOrWhiteSpace(quotation.QuotationNumber))
                     result.Errors.Add(QuotationValidationError.EmptyQuotationNumber);
             }
-
-            // ================= ITEMS VALIDATION =================
 
             if (quotation.Items != null && quotation.Items.Any())
             {

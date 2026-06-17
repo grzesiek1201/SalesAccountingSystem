@@ -1,5 +1,6 @@
 using AccountingSystem.Application.DTOs;
 using AccountingSystem.Application.Interfaces;
+using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Validation.Invoices;
 using AccountingSystem.Domain.Entities;
@@ -16,34 +17,46 @@ namespace AccountingSystem.Application.Services
         private readonly InvoiceValidator _validator;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<InvoiceService> _logger;
+        private readonly NumberSequenceService _numberSequenceService;
+        private readonly OrderToInvoiceMapper _mapper;
 
         public InvoiceService(
             IInvoiceRepository invoiceRepository,
             InvoiceValidator validator,
             IUnitOfWork unitOfWork,
-            ILogger<InvoiceService> logger)
+            ILogger<InvoiceService> logger,
+            NumberSequenceService numberSequenceService,
+            OrderToInvoiceMapper mapper)
         {
             _invoiceRepository = invoiceRepository;
             _validator = validator;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _numberSequenceService = numberSequenceService;
+            _mapper = mapper;
         }
+
+        // ================= ADD =================
 
         public InvoiceAddResponse AddInvoice(Invoice invoice)
         {
-            _logger.LogInformation("Starting AddInvoice. CustomerId: {CustomerId}", invoice.Customer?.Id);
+            _logger.LogInformation("AddInvoice start. CustomerId: {CustomerId}", invoice.Customer?.Id);
 
-            var invoices = _invoiceRepository.GetAll();
-            var result = _validator.Validate(invoice, invoices);
+            invoice.InvoiceNumber =
+                _numberSequenceService.GetNext(DocumentType.Invoice);
 
-            if (!result.IsValid)
+            var validation = _validator.Validate(
+                invoice,
+                _invoiceRepository.GetAll());
+
+            if (!validation.IsValid)
             {
-                _logger.LogWarning("AddInvoice validation failed. Errors: {Errors}", result.Errors);
+                _logger.LogWarning("AddInvoice validation failed. Errors: {Errors}", validation.Errors);
 
                 return new InvoiceAddResponse
                 {
                     Result = InvoiceAddResult.InvalidData,
-                    Errors = result.Errors
+                    Errors = validation.Errors
                 };
             }
 
@@ -57,6 +70,64 @@ namespace AccountingSystem.Application.Services
                 Result = InvoiceAddResult.Success
             };
         }
+
+        // ================= CREATE FROM ORDER =================
+
+        public InvoiceAddResponse CreateFromOrder(Order order)
+        {
+            _logger.LogInformation("CreateFromOrder start. OrderId: {OrderId}", order?.Id);
+
+            if (order == null)
+            {
+                _logger.LogWarning("Order is null");
+                return new InvoiceAddResponse { Result = InvoiceAddResult.InvalidData };
+            }
+
+            var invoice = _mapper.Map(order);
+
+            if (order == null)
+            {
+                _logger.LogWarning("Mapper returned null for OrderId: {OrderId}", order.Id);
+                return new InvoiceAddResponse { Result = InvoiceAddResult.InvalidData };
+            }
+
+            _logger.LogInformation(
+                "Mapped order to order. CustomerId: {CustomerId}, Items: {Count}",
+                invoice.CustomerId,
+                invoice.Items?.Count ?? 0);
+                invoice.InvoiceNumber =
+                _numberSequenceService.GetNext(DocumentType.Invoice);
+
+            var validation = _validator.Validate(invoice, _invoiceRepository.GetAll());
+
+            if (!validation.IsValid)
+            {
+                _logger.LogWarning(
+                    "Invoice from order invalid. OrderId: {OrderId}, Errors: {Errors}",
+                    order.Id,
+                    validation.Errors);
+
+                return new InvoiceAddResponse
+                {
+                    Result = InvoiceAddResult.InvalidData,
+                    Errors = validation.Errors
+                };
+            }
+
+            _invoiceRepository.Add(invoice);
+            _unitOfWork.Save();
+
+            _logger.LogInformation(
+                "Invoice created from order SUCCESS. InvoiceId: {InvoiceId}",
+                order.Id);
+
+            return new InvoiceAddResponse
+            {
+                Result = InvoiceAddResult.Success
+            };
+        }
+
+        // ================= EDIT =================
 
         public InvoiceEditResult EditInvoice(Invoice invoice)
         {
@@ -76,13 +147,13 @@ namespace AccountingSystem.Application.Services
                 return InvoiceEditResult.InvoiceArchived;
             }
 
-            var otherInvoices = _invoiceRepository.GetAll()?.ToList() ?? new List<Invoice>();
-            var result = _validator.Validate(invoice, otherInvoices);
+            var validation = _validator.Validate(invoice,
+                _invoiceRepository.GetAll().Where(x => x.Id != invoice.Id).ToList());
 
-            if (!result.IsValid)
+            if (!validation.IsValid)
             {
                 _logger.LogWarning("EditInvoice validation failed. Id: {InvoiceId}, Errors: {Errors}",
-                    invoice.Id, result.Errors);
+                    invoice.Id, validation.Errors);
 
                 return InvoiceEditResult.InvalidData;
             }
@@ -98,6 +169,30 @@ namespace AccountingSystem.Application.Services
             return InvoiceEditResult.Success;
         }
 
+        // ================= STATUS =================
+
+        public InvoiceStatusResult ChangeInvoiceStatus(int id, InvoiceStatus newStatus)
+        {
+            _logger.LogInformation("ChangeStatus {Id} -> {Status}", id, newStatus);
+
+            var invoice = _invoiceRepository.GetById(id);
+
+            if (invoice == null)
+                return InvoiceStatusResult.NotFound;
+
+            if (invoice.IsInvoiceArchived)
+                return InvoiceStatusResult.InvalidOperation;
+
+            invoice.Status = newStatus;
+
+            _invoiceRepository.Update(invoice);
+            _unitOfWork.Save();
+
+            return InvoiceStatusResult.Success;
+        }
+
+        // ================= READ =================
+
         public List<Invoice> GetAllInvoices()
         {
             _logger.LogInformation("Fetching all invoices");
@@ -109,6 +204,8 @@ namespace AccountingSystem.Application.Services
             _logger.LogInformation("Finding invoice by Id: {InvoiceId}", id);
             return _invoiceRepository.GetById(id);
         }
+
+        // ================= ARCHIVE =================
 
         public ArchiveInvoiceResult ArchiveInvoice(int id)
         {

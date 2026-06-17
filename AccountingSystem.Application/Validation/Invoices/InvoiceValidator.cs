@@ -16,7 +16,7 @@ namespace AccountingSystem.Application.Validation.Invoices
                 return result;
             }
 
-            if (invoice.Customer == null)
+            if (invoice.CustomerId <= 0)
                 result.Errors.Add(InvoiceValidationError.EmptyCustomer);
 
             if (invoice.Items == null || invoice.Items.Count == 0)
@@ -32,7 +32,7 @@ namespace AccountingSystem.Application.Validation.Invoices
                         continue;
                     }
 
-                    if (item.Product == null)
+                    if (item.ProductId <= 0)
                         result.Errors.Add(InvoiceValidationError.EmptyProduct);
 
                     if (item.Quantity <= 0)
