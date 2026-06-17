@@ -15,10 +15,17 @@ namespace AccountingSystem.Infrastructure.Repositories
         }
 
         public List<Order> GetAll()
-            => _context.Orders.AsNoTracking().ToList();
+             => _context.Orders
+                 .Include(x => x.Items)
+                 .Include(x => x.Customer)
+                 .AsNoTracking()
+                 .ToList();
 
         public Order? GetById(int id)
-            => _context.Orders.FirstOrDefault(x => x.Id == id);
+            => _context.Orders
+                .Include(x => x.Items)
+                .Include(x => x.Customer)
+                .FirstOrDefault(x => x.Id == id);
 
         public void Add(Order order)
             => _context.Orders.Add(order);

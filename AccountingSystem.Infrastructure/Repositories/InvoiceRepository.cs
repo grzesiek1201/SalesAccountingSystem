@@ -15,10 +15,17 @@ namespace AccountingSystem.Infrastructure.Repositories
         }
 
         public List<Invoice> GetAll()
-            => _context.Invoices.AsNoTracking().ToList();
+            => _context.Invoices
+                 .Include(x => x.Items)
+                 .Include(x => x.Customer)
+                 .AsNoTracking()
+                 .ToList();
 
         public Invoice? GetById(int id)
-            => _context.Invoices.FirstOrDefault(x => x.Id == id);
+            => _context.Invoices
+                .Include(x => x.Items)
+                .Include(x => x.Customer)
+                .FirstOrDefault(x => x.Id == id);
 
         public void Add(Invoice invoice)
             => _context.Invoices.Add(invoice);

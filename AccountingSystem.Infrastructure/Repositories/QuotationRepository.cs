@@ -15,10 +15,15 @@ namespace AccountingSystem.Infrastructure.Repositories
         }
 
         public List<Quotation> GetAll()
-            => _context.Quotations.AsNoTracking().ToList();
+            => _context.Quotations
+                .Include(x => x.Items)
+                .AsNoTracking()
+                .ToList();
 
         public Quotation? GetById(int id)
-            => _context.Quotations.FirstOrDefault(x => x.Id == id);
+            => _context.Quotations
+                .Include(x => x.Items)
+                .FirstOrDefault(x => x.Id == id);
 
         public void Add(Quotation quotation)
             => _context.Quotations.Add(quotation);
