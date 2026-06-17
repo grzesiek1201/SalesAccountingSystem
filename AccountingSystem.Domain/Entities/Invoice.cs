@@ -10,6 +10,8 @@ namespace AccountingSystem.Domain.Entities
 
         public string InvoiceNumber { get; set; }
 
+        public int OrderId { get; set; }
+
         public InvoiceStatus Status { get; set; }
 
         public DateTime DateCreated { get; set; }

@@ -27,9 +27,23 @@ namespace AccountingSystem.Domain.Enums
         NotFound,
     }
 
+    public enum ConvertOrderResult
+    {
+        Success,
+        NotFound,
+        InvalidData,
+    }
+
     public enum ValidateOrderResult
     {
         IsValid,
         NotValid
+    }
+
+    public enum OrderStatusResult
+    {
+        Success,
+        NotFound,
+        InvalidOperation,
     }
 }

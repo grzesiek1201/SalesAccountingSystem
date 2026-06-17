@@ -10,6 +10,7 @@ namespace AccountingSystem.Domain.Enums
         Confirmed,
         InProgress,
         Completed,
+        ConvertedToInvoice,
         Canceled
     }
 }

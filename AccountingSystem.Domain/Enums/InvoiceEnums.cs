@@ -41,4 +41,11 @@ namespace AccountingSystem.Domain.Enums
         InvalidAmount,
         AmountExceedsRemaining
     }
+
+    public enum InvoiceStatusResult
+    {
+        Success,
+        NotFound,
+        InvalidOperation,
+    }
 }
