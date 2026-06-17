@@ -1,21 +1,12 @@
 using AccountingSystem.Application.Services;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AccountingSystem.UI
 {
     public class InvoiceUI
     {
         private readonly InvoiceService _invoiceService;
-        private readonly OrderService _orderService;
-        private readonly QuotationService _quotationService;
-        private readonly CustomerService _customerService;
-        private readonly ProductService _productService;
 
         public InvoiceUI(
             InvoiceService invoiceService,
@@ -25,18 +16,22 @@ namespace AccountingSystem.UI
             ProductService productService)
         {
             _invoiceService = invoiceService;
-            _orderService = orderService;
-            _quotationService = quotationService;
-            _customerService = customerService;
-            _productService = productService;
         }
+
+        // ================= ADD =================
 
         public void AddInvoiceFlow()
         {
-            var invoice = GetInvoiceInput();
-            if (invoice == null) return;
+            int customerId = GetCustomerIdInput();
+            var items = GetInvoiceItemsInput();
 
-            AddInvoiceItemsFlow(invoice);
+            var invoice = new Invoice
+            {
+                CustomerId = customerId,
+                DateCreated = DateTime.Now,
+                Status = InvoiceStatus.Draft,
+                Items = items
+            };
 
             var response = _invoiceService.AddInvoice(invoice);
 
@@ -52,24 +47,53 @@ namespace AccountingSystem.UI
             Console.WriteLine("Invoice added successfully");
         }
 
+        // ================= EDIT =================
+
         public void EditInvoiceFlow()
         {
-            Console.WriteLine("Edit invoice - fill fields below.");
+            Console.WriteLine("Edit invoice");
 
-            var invoice = GetInvoiceInput();
-            if (invoice == null) return;
+            int invoiceId = GetInvoiceId();
+            var items = GetInvoiceItemsInput();
 
-            _invoiceService.EditInvoice(invoice);
+            var invoice = new Invoice
+            {
+                Id = invoiceId,
+                Items = items.Any() ? items : null
+            };
+
+            var result = _invoiceService.EditInvoice(invoice);
+
+            Console.WriteLine($"Result: {result}");
         }
+
+        public void EditStatusFlow()
+        {
+            Console.WriteLine("Edit invoice status");
+
+            int invoiceId = GetInvoiceId();
+
+            var status = GetStatusInput();
+
+            var invoice = new Invoice
+            {
+                Id = invoiceId,
+                Status = status
+            };
+
+            var result = _invoiceService.ChangeInvoiceStatus(invoiceId, status);
+
+            Console.WriteLine($"Result: {result}");
+        }
+
+        // ================= READ =================
 
         public void GetAllInvoicesFlow()
         {
             var invoices = _invoiceService.GetAllInvoices();
 
             foreach (var i in invoices)
-            {
                 PrintInvoice(i);
-            }
         }
 
         public void FindInvoiceFlow()
@@ -87,90 +111,84 @@ namespace AccountingSystem.UI
             PrintInvoice(invoice);
         }
 
+        // ================= ARCHIVE =================
+
         public void ArchiveInvoiceFlow()
         {
             int id = GetInvoiceId();
 
             var result = _invoiceService.ArchiveInvoice(id);
 
-            switch (result)
-            {
-                case ArchiveInvoiceResult.NotFound:
-                    Console.WriteLine("Invoice not found");
-                    break;
-
-                case ArchiveInvoiceResult.Success:
-                    Console.WriteLine("Invoice archived");
-                    break;
-            }
+            Console.WriteLine($"Archive result: {result}");
         }
 
         // ================= INPUT =================
 
-        private Invoice? GetInvoiceInput()
+        private InvoiceStatus GetStatusInput()
         {
-            int customerId = GetInt("Customer ID: ");
+            Console.WriteLine("Select status:");
+            Console.WriteLine("1 - Draft");
+            Console.WriteLine("2 - Issued");
+            Console.WriteLine("3 - Cancelled");
+            Console.WriteLine("4 - Unpaid");
 
-            var customer = _customerService.FindCustomer(customerId);
+            int value = GetInt("Option: ");
 
-            if (customer == null)
+            return value switch
             {
-                Console.WriteLine("Customer not found");
-                return null;
-            }
-
-            return new Invoice
-            {
-                Customer = customer,
-                DateCreated = DateTime.Now,
-                Status = InvoiceStatus.Draft,
-                Items = new List<InvoiceItem>()
+                1 => InvoiceStatus.Draft,
+                2 => InvoiceStatus.Issued,
+                3 => InvoiceStatus.Cancelled,
+                4 => InvoiceStatus.Unpaid,
+                _ => InvoiceStatus.Draft
             };
         }
-
-        private void AddInvoiceItemsFlow(Invoice invoice)
+        private int GetCustomerIdInput()
         {
-            Console.WriteLine("Add product ID (0 = finish)");
-
-            while (true)
-            {
-                int productId = GetInt("Product ID: ");
-
-                if (productId == 0)
-                    break;
-
-                var product = _productService.FindProduct(productId);
-
-                if (product == null)
-                {
-                    Console.WriteLine("Product not found");
-                    continue;
-                }
-
-                int qty = GetInt("Quantity: ");
-                decimal discount = GetDecimal("Discount %: ");
-
-                var unitPrice = product.Price * (1 - discount / 100m);
-
-                invoice.Items.Add(new InvoiceItem
-                {
-                    Position = invoice.Items.Count + 1,
-                    Product = product,
-                    Quantity = qty,
-                    DiscountPercent = discount,
-                    BaseUnitPrice = unitPrice
-                });
-
-                Console.WriteLine("Item added");
-            }
+            return GetInt("Customer ID: ");
         }
-
-        // ================= HELPERS =================
 
         private int GetInvoiceId()
         {
             return GetInt("Invoice ID: ");
         }
+
+        private List<InvoiceItem> GetInvoiceItemsInput()
+        {
+            var items = new List<InvoiceItem>();
+            int position = 1;
+
+            Console.Write("Add items? (y/n): ");
+            var start = Console.ReadLine();
+
+            if (start?.ToLower() != "y")
+                return items;
+
+            while (true)
+            {
+                Console.Write("Add item? (y/n): ");
+                var choice = Console.ReadLine();
+
+                if (choice?.ToLower() != "y")
+                    break;
+
+                int productId = GetInt("Product ID: ");
+                int quantity = GetInt("Quantity: ");
+                decimal unitPrice = GetDecimal("Unit price: ");
+
+                items.Add(new InvoiceItem
+                {
+                    Position = position++,
+                    ProductId = productId,
+                    Quantity = quantity,
+                    BaseUnitPrice = unitPrice
+                });
+            }
+
+            return items;
+        }
+
+        // ================= HELPERS =================
 
         private int GetInt(string label)
         {
@@ -198,12 +216,15 @@ namespace AccountingSystem.UI
             return value;
         }
 
+        // ================= PRINT =================
+
         private void PrintInvoice(Invoice i)
         {
             Console.WriteLine($"Id: {i.Id}");
             Console.WriteLine($"Customer: {i.Customer?.Name}");
             Console.WriteLine($"Date: {i.DateCreated}");
             Console.WriteLine($"Status: {i.Status}");
+            Console.WriteLine($"Invoice Number: {i.InvoiceNumber}");
 
             Console.WriteLine("--- ITEMS ---");
 
@@ -221,6 +242,8 @@ namespace AccountingSystem.UI
             Console.WriteLine($"TOTAL: {total}");
             Console.WriteLine("--------------------------------");
         }
+
+        // ================= ERRORS =================
 
         private string GetInvoiceErrorMessage(InvoiceValidationError error)
         {

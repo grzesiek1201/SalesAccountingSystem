@@ -140,7 +140,7 @@ namespace AccountingSystem.UI
         {
             RunMenu(
                 "QUOTATION MENU",
-                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, 6- Convert, 7- Change status, r - back",
+                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, 6- Change status, 7- Convert, r - back",
                 new Dictionary<string, Action>
                 {
                     { "1", _quotationUI.AddQuotationFlow },
@@ -148,8 +148,8 @@ namespace AccountingSystem.UI
                     { "3", _quotationUI.ArchiveQuotationFlow },
                     { "4", _quotationUI.FindQuotationFlow },
                     { "5", _quotationUI.GetAllQuotationsFlow },
-                    { "6", _quotationUI.ConvertToOrderFlow },
-                    { "7", _quotationUI.EditStatusFlow }
+                    { "6", _quotationUI.EditStatusFlow },
+                    { "7", _quotationUI.ConvertToOrderFlow }
                 });
         }
 
@@ -157,14 +157,16 @@ namespace AccountingSystem.UI
         {
             RunMenu(
                 "ORDER MENU",
-                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, r - back",
+                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, 6- Change status, 7- Convert, r - back",
                 new Dictionary<string, Action>
                 {
                     { "1", _orderUI.AddOrderFlow },
                     { "2", _orderUI.EditOrderFlow },
                     { "3", _orderUI.ArchiveOrderFlow },
                     { "4", _orderUI.FindOrderFlow },
-                    { "5", _orderUI.GetAllOrdersFlow }
+                    { "5", _orderUI.GetAllOrdersFlow },
+                    { "6", _orderUI.EditStatusFlow },
+                    { "7", _orderUI.ConvertToInvoiceFlow }
                 });
         }
 
@@ -172,14 +174,15 @@ namespace AccountingSystem.UI
         {
             RunMenu(
                 "INVOICE MENU",
-                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, r - back",
+                "1- Add, 2- Edit, 3- Archive, 4- Find, 5- List, 6- Change status,  r - back",
                 new Dictionary<string, Action>
                 {
                     { "1", _invoiceUI.AddInvoiceFlow },
                     { "2", _invoiceUI.EditInvoiceFlow },
                     { "3", _invoiceUI.ArchiveInvoiceFlow },
                     { "4", _invoiceUI.FindInvoiceFlow },
-                    { "5", _invoiceUI.GetAllInvoicesFlow }
+                    { "5", _invoiceUI.GetAllInvoicesFlow },
+                    { "6", _invoiceUI.EditStatusFlow }
                 });
         }
 

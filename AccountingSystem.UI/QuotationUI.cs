@@ -1,8 +1,6 @@
 using AccountingSystem.Application.Services;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
-using System;
-using System.Collections.Generic;
 
 namespace AccountingSystem.UI
 {
@@ -107,6 +105,8 @@ namespace AccountingSystem.UI
             PrintQuotation(quotation);
         }
 
+        // ================= ARCHIVE =================
+
         public void ArchiveQuotationFlow()
         {
             int id = GetQuotationId();
@@ -115,6 +115,8 @@ namespace AccountingSystem.UI
 
             Console.WriteLine($"Archive result: {result}");
         }
+
+        // ================= CONVERT =================
 
         public void ConvertToOrderFlow()
         {
@@ -202,6 +204,35 @@ namespace AccountingSystem.UI
             return items;
         }
 
+        // ================= HELPERS =================
+
+        private int GetInt(string label)
+        {
+            int value;
+            Console.Write(label);
+
+            while (!int.TryParse(Console.ReadLine(), out value))
+            {
+                Console.Write("Invalid number. Try again: ");
+            }
+
+            return value;
+        }
+
+        private decimal GetDecimal(string label)
+        {
+            decimal value;
+            Console.Write(label);
+
+            while (!decimal.TryParse(Console.ReadLine(), out value))
+            {
+                Console.Write("Invalid number. Try again: ");
+            }
+
+            return value;
+        }
+
+
         // ================= PRINT =================
 
         private void PrintQuotation(Quotation q)
@@ -210,6 +241,7 @@ namespace AccountingSystem.UI
             Console.WriteLine($"CustomerId: {q.CustomerId}");
             Console.WriteLine($"Date: {q.DateCreated}");
             Console.WriteLine($"Status: {q.Status}");
+            Console.WriteLine($"Quotation Number: {q.QuotationNumber}"); 
 
             Console.WriteLine("--- ITEMS ---");
 
@@ -250,18 +282,6 @@ namespace AccountingSystem.UI
             };
         }
 
-        // ================= HELPERS =================
 
-        private int GetInt(string label)
-        {
-            Console.Write(label);
-            return int.Parse(Console.ReadLine() ?? "0");
-        }
-
-        private decimal GetDecimal(string label)
-        {
-            Console.Write(label);
-            return decimal.Parse(Console.ReadLine() ?? "0");
-        }
     }
 }
