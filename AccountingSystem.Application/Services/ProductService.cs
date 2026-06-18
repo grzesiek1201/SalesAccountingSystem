@@ -29,6 +29,8 @@ namespace AccountingSystem.Application.Services
             _logger = logger;
         }
 
+        // ================= ADD =================
+
         public ProductAddResponse AddProduct(Product product)
         {
             _logger.LogInformation("Starting AddProduct. Name: {Name}", product.Name);
@@ -57,6 +59,8 @@ namespace AccountingSystem.Application.Services
                 Result = ProductAddResult.Success
             };
         }
+
+        // ================= EDIT =================
 
         public ProductEditResult EditProduct(Product product)
         {
@@ -103,6 +107,8 @@ namespace AccountingSystem.Application.Services
             return ProductEditResult.Success;
         }
 
+        // ================= READ =================
+
         public List<Product> GetAllProducts()
         {
             _logger.LogInformation("Fetching all products");
@@ -114,6 +120,8 @@ namespace AccountingSystem.Application.Services
             _logger.LogInformation("Finding product. Id: {ProductId}", id);
             return _productRepository.GetById(id);
         }
+
+        // ================= ARCHIVE =================
 
         public ArchiveProductResult ArchiveProduct(int id)
         {

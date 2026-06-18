@@ -7,11 +7,14 @@ namespace AccountingSystem.UI
     public class OrderUI
     {
         private readonly OrderService _orderService;
+        private readonly DocumentConversionService _documentConversionService;
 
         public OrderUI(
-            OrderService orderService)
+            OrderService orderService,
+            DocumentConversionService documentConversionService)
         {
             _orderService = orderService;
+            _documentConversionService = documentConversionService;
         }
 
         // ================= ADD =================
@@ -125,7 +128,7 @@ namespace AccountingSystem.UI
         {
             int id = GetOrderId();
 
-            var result = _orderService.ConvertToInvoice(id);
+            var result = _documentConversionService.ConvertOrderToInvoice(id);
 
             switch (result)
             {

@@ -35,6 +35,7 @@ namespace AccountingSystem
                     services.AddScoped<NumberSequenceService>();
                     services.AddScoped<QuotationToOrderMapper>();
                     services.AddScoped<OrderToInvoiceMapper>();
+                    services.AddScoped<DocumentConversionService>();
 
                     // VALIDATORS
                     services.AddScoped<CustomerValidator>();

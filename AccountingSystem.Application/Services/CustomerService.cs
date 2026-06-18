@@ -29,6 +29,8 @@ namespace AccountingSystem.Application.Services
             _logger = logger;
         }
 
+        // ================= ADD =================
+
         public CustomerAddResponse AddCustomer(Customer customer)
         {
             _logger.LogInformation("Starting AddCustomer. Email: {Email}", customer.Email);
@@ -57,6 +59,8 @@ namespace AccountingSystem.Application.Services
                 Result = CustomerAddResult.Success
             };
         }
+
+        // ================= EDIT =================
 
         public CustomerEditResult EditCustomer(Customer customer)
         {
@@ -105,6 +109,8 @@ namespace AccountingSystem.Application.Services
             return CustomerEditResult.Success;
         }
 
+        // ================= READ =================
+
         public List<Customer> GetAllCustomers()
         {
             _logger.LogInformation("Fetching all customers");
@@ -116,6 +122,8 @@ namespace AccountingSystem.Application.Services
             _logger.LogInformation("Finding customer. Id: {CustomerId}", id);
             return _repository.GetById(id);
         }
+
+        // ================= ARCHIVE =================
 
         public ArchiveCustomerResult ArchiveCustomer(int id)
         {

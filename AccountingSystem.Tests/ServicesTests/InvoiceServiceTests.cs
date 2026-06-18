@@ -1,4 +1,5 @@
 ﻿using AccountingSystem.Application.Interfaces;
+using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Invoices;
@@ -18,6 +19,8 @@ namespace AccountingSystem.Tests.ServicesTests
         private readonly Mock<IInvoiceRepository> _repoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<ILogger<InvoiceService>> _loggerMock;
+        private readonly Mock<NumberSequenceService> _SeqMock;
+        private readonly Mock<OrderToInvoiceMapper> _mapperMock;
 
         private readonly InvoiceValidator _validator;
         private readonly InvoiceService _service;
@@ -27,6 +30,8 @@ namespace AccountingSystem.Tests.ServicesTests
             _repoMock = new Mock<IInvoiceRepository>();
             _uowMock = new Mock<IUnitOfWork>();
             _loggerMock = new Mock<ILogger<InvoiceService>>();
+            _SeqMock = new Mock<NumberSequenceService>();
+            _mapperMock = new Mock<OrderToInvoiceMapper>();
 
             _validator = new InvoiceValidator();
 
@@ -34,7 +39,9 @@ namespace AccountingSystem.Tests.ServicesTests
                 _repoMock.Object,
                 _validator,
                 _uowMock.Object,
-                _loggerMock.Object
+                _loggerMock.Object,
+                _SeqMock.Object,
+                _mapperMock.Object
             );
         }
 

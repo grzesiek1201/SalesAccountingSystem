@@ -7,10 +7,12 @@ namespace AccountingSystem.UI
     public class QuotationUI
     {
         private readonly QuotationService _quotationService;
+        private readonly DocumentConversionService _documentConversionService;
 
-        public QuotationUI(QuotationService quotationService)
+        public QuotationUI(QuotationService quotationService, DocumentConversionService documentConversionService)
         {
             _quotationService = quotationService;
+            _documentConversionService = documentConversionService;
         }
 
         // ================= ADD =================
@@ -122,7 +124,7 @@ namespace AccountingSystem.UI
         {
             int id = GetQuotationId();
 
-            var result = _quotationService.ConvertToOrder(id);
+            var result = _documentConversionService.ConvertQuotationToOrder(id);
 
             switch (result)
             {

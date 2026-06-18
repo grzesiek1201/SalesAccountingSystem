@@ -17,23 +17,28 @@ namespace AccountingSystem.Tests.ServicesTests
         private readonly Mock<IOrderRepository> _repoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<ILogger<OrderService>> _loggerMock;
+        private readonly Mock<NumberSequenceService> _seqMock;
 
         private readonly OrderValidator _validator;
         private readonly OrderService _service;
+
 
         public OrderServiceTests()
         {
             _repoMock = new Mock<IOrderRepository>();
             _uowMock = new Mock<IUnitOfWork>();
             _loggerMock = new Mock<ILogger<OrderService>>();
-           
+            _seqMock = new Mock<NumberSequenceService>();
+
+
             _validator = new OrderValidator();
 
             _service = new OrderService(
                 _repoMock.Object,
                 _validator,
                 _uowMock.Object,
-                _loggerMock.Object
+                _loggerMock.Object,
+                _seqMock.Object
             );
         }
 

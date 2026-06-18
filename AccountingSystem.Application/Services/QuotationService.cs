@@ -1,13 +1,10 @@
 using AccountingSystem.Application.DTOs;
 using AccountingSystem.Application.Interfaces;
-using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Validation.Quotations;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace AccountingSystem.Application.Services
 {
@@ -18,25 +15,20 @@ namespace AccountingSystem.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<QuotationService> _logger;
         private readonly NumberSequenceService _numberSequenceService;
-        private readonly OrderService _orderService;
-        private readonly QuotationToOrderMapper _mapper;
 
         public QuotationService(
             IQuotationRepository quotationRepository,
             QuotationValidator validator,
             IUnitOfWork unitOfWork,
             ILogger<QuotationService> logger,
-            NumberSequenceService numberSequenceService,
-            OrderService orderService,
-            QuotationToOrderMapper mapper)
+            NumberSequenceService numberSequenceService)
         {
             _quotationRepository = quotationRepository;
             _validator = validator;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _numberSequenceService = numberSequenceService;
-            _orderService = orderService;
-            _mapper = mapper;
+
         }
 
         // ================= ADD =================
@@ -120,54 +112,6 @@ namespace AccountingSystem.Application.Services
             _logger.LogInformation("EditQuotation success: {Id}", input.Id);
 
             return QuotationEditResult.Success;
-        }
-
-        // ================= CONVERT =================
-
-        public ConvertQuotationResult ConvertToOrder(int id)
-        {
-            _logger.LogInformation("ConvertToOrder start. Id: {Id}", id);
-
-            var quotation = _quotationRepository.GetById(id);
-
-            if (quotation == null)
-            {
-                _logger.LogWarning("Quotation not found: {Id}", id);
-                return ConvertQuotationResult.NotFound;
-            }
-
-            if (quotation.IsQuotationArchived)
-            {
-                _logger.LogWarning("Quotation archived: {Id}", id);
-                return ConvertQuotationResult.InvalidData;
-            }
-
-            if (quotation.Status != QuotationStatus.Accepted)
-            {
-                _logger.LogWarning("Quotation not accepted: {Id}", id);
-                return ConvertQuotationResult.InvalidData;
-            }
-
-            _logger.LogInformation("Mapping quotation -> order: {Id}", id);
-
-            var order = _mapper.Map(quotation);
-
-            var result = _orderService.AddOrder(order);
-
-            if (!result.IsSuccess)
-            {
-                _logger.LogWarning("Order creation failed: {Id}", id);
-                return ConvertQuotationResult.InvalidData;
-            }
-
-            quotation.Status = QuotationStatus.ConvertedToOrder;
-
-            _quotationRepository.Update(quotation);
-            _unitOfWork.Save();
-
-            _logger.LogInformation("Convert success: {Id}", id);
-
-            return ConvertQuotationResult.Success;
         }
 
         // ================= STATUS =================
