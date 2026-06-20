@@ -14,10 +14,11 @@ namespace AccountingSystem.Domain.Enums
         CustomerArchived
     }
 
-    public enum ArchiveCustomerResult
+    public enum CustomerArchiveResult
     {
         Success,
         NotFound,
+        AlreadyArchived,
         CustomerInDebt
     } 
 

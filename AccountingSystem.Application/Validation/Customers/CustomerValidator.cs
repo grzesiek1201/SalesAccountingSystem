@@ -1,12 +1,3 @@
-using AccountingSystem.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection.Emit;
-using System.Text;
-using System.Xml.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 namespace AccountingSystem.Application.Validation.Customers
 {
     public class CustomerValidator

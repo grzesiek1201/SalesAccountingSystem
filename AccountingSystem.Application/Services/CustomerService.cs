@@ -1,12 +1,9 @@
-using AccountingSystem.Application.DTOs;
+using AccountingSystem.Application.DTOs.Customers;
 using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Validation.Customers;
-using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace AccountingSystem.Application.Services
 {
@@ -62,7 +59,7 @@ namespace AccountingSystem.Application.Services
 
         // ================= EDIT =================
 
-        public CustomerEditResult EditCustomer(Customer customer)
+        public CustomerEditResponse EditCustomer(Customer customer)
         {
             _logger.LogInformation("Starting EditCustomer. Id: {CustomerId}", customer.Id);
 
@@ -71,13 +68,19 @@ namespace AccountingSystem.Application.Services
             if (existing == null)
             {
                 _logger.LogWarning("Customer not found. Id: {CustomerId}", customer.Id);
-                return CustomerEditResult.NotFound;
+                return new CustomerEditResponse
+                {
+                    Result = CustomerEditResult.NotFound
+                };
             }
 
             if (existing.IsCustomerArchived)
             {
                 _logger.LogWarning("Attempt to edit archived customer. Id: {CustomerId}", customer.Id);
-                return CustomerEditResult.CustomerArchived;
+                return new CustomerEditResponse
+                {
+                    Result = CustomerEditResult.CustomerArchived
+                };
             }
 
             var otherCustomers = _repository
@@ -85,14 +88,21 @@ namespace AccountingSystem.Application.Services
                 .Where(x => x.Id != customer.Id)
                 .ToList();
 
-            var result = _validator.Validate(customer, otherCustomers);
+            var validation = _validator.Validate(customer, otherCustomers);
 
-            if (!result.IsValid)
+            if (!validation.IsValid)
             {
-                _logger.LogWarning("EditCustomer validation failed. Id: {CustomerId}, Errors: {Errors}",
-                    customer.Id, result.Errors);
+                _logger.LogWarning(
+                    "EditCustomer validation failed. Id: {CustomerId}, Errors: {Errors}",
+                    customer.Id,
+                    validation.Errors
+                );
 
-                return CustomerEditResult.InvalidData;
+                return new CustomerEditResponse
+                {
+                    Result = CustomerEditResult.InvalidData,
+                    Errors = validation.Errors
+                };
             }
 
             existing.Name = customer.Name;
@@ -106,7 +116,10 @@ namespace AccountingSystem.Application.Services
 
             _logger.LogInformation("Customer updated successfully. Id: {CustomerId}", customer.Id);
 
-            return CustomerEditResult.Success;
+            return new CustomerEditResponse
+            {
+                Result = CustomerEditResult.Success
+            };
         }
 
         // ================= READ =================
@@ -125,7 +138,7 @@ namespace AccountingSystem.Application.Services
 
         // ================= ARCHIVE =================
 
-        public ArchiveCustomerResult ArchiveCustomer(int id)
+        public CustomerArchiveResult ArchiveCustomer(int id)
         {
             _logger.LogInformation("Archiving customer. Id: {CustomerId}", id);
 
@@ -134,7 +147,7 @@ namespace AccountingSystem.Application.Services
             if (existing == null)
             {
                 _logger.LogWarning("Customer not found for archive. Id: {CustomerId}", id);
-                return ArchiveCustomerResult.NotFound;
+                return CustomerArchiveResult.NotFound;
             }
 
             existing.IsCustomerArchived = true;
@@ -144,7 +157,7 @@ namespace AccountingSystem.Application.Services
 
             _logger.LogInformation("Customer archived successfully. Id: {CustomerId}", id);
 
-            return ArchiveCustomerResult.Success;
+            return CustomerArchiveResult.Success;
         }
     }
 }

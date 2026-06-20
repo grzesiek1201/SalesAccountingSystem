@@ -2,12 +2,9 @@
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Customers;
-using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Collections.Generic;
-using Xunit;
 
 namespace AccountingSystem.Tests.ServicesTests
 {
@@ -116,7 +113,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditCustomer(customer);
 
-            Assert.Equal(CustomerEditResult.NotFound, result);
+            Assert.Equal(CustomerEditResult.NotFound, result.Result);
         }
 
         [Fact]
@@ -130,7 +127,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditCustomer(customer);
 
-            Assert.Equal(CustomerEditResult.CustomerArchived, result);
+            Assert.Equal(CustomerEditResult.CustomerArchived, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Customer>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
@@ -150,7 +147,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditCustomer(customer);
 
-            Assert.Equal(CustomerEditResult.InvalidData, result);
+            Assert.Equal(CustomerEditResult.InvalidData, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Customer>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
@@ -169,7 +166,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditCustomer(customer);
 
-            Assert.Equal(CustomerEditResult.Success, result);
+            Assert.Equal(CustomerEditResult.Success, result.Result);
 
             _repoMock.Verify(r => r.Update(customer), Times.Once);
             _uowMock.Verify(u => u.Save(), Times.Once);
@@ -187,7 +184,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.ArchiveCustomer(customer.Id);
 
-            Assert.Equal(ArchiveCustomerResult.Success, result);
+            Assert.Equal(CustomerArchiveResult.Success, result);
             Assert.True(customer.IsCustomerArchived);
 
             _repoMock.Verify(r => r.Update(customer), Times.Once);
@@ -202,7 +199,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.ArchiveCustomer(1);
 
-            Assert.Equal(ArchiveCustomerResult.NotFound, result);
+            Assert.Equal(CustomerArchiveResult.NotFound, result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Customer>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);

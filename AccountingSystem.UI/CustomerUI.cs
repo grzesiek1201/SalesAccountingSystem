@@ -94,15 +94,15 @@ namespace AccountingSystem.UI
 
             switch (result)
             {
-                case AccountingSystem.Domain.Enums.ArchiveCustomerResult.NotFound:
+                case AccountingSystem.Domain.Enums.CustomerArchiveResult.NotFound:
                     Console.WriteLine("Customer not found");
                     break;
 
-                case AccountingSystem.Domain.Enums.ArchiveCustomerResult.CustomerInDebt:
+                case AccountingSystem.Domain.Enums.CustomerArchiveResult.CustomerInDebt:
                     Console.WriteLine("Customer has unpaid debt");
                     break;
 
-                case AccountingSystem.Domain.Enums.ArchiveCustomerResult.Success:
+                case AccountingSystem.Domain.Enums.CustomerArchiveResult.Success:
                     Console.WriteLine("Customer archived");
                     break;
             }
