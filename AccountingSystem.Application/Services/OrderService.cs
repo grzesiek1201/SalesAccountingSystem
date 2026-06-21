@@ -1,4 +1,4 @@
-using AccountingSystem.Application.DTOs;
+using AccountingSystem.Application.DTOs.Order;
 using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Validation.Orders;
@@ -67,7 +67,7 @@ namespace AccountingSystem.Application.Services
 
         // ================= EDIT =================
 
-        public OrderEditResult EditOrder(Order order)
+        public OrderEditResponse EditOrder(Order order)
         {
             _logger.LogInformation("EditOrder start. OrderId: {OrderId}", order.Id);
 
@@ -76,13 +76,20 @@ namespace AccountingSystem.Application.Services
             if (existing == null)
             {
                 _logger.LogWarning("Order not found: {OrderId}", order.Id);
-                return OrderEditResult.NotFound;
+                return new OrderEditResponse
+                {
+                    Result = OrderEditResult.NotFound
+                };
             }
 
             if (existing.IsOrderArchived)
             {
                 _logger.LogWarning("Order archived: {OrderId}", order.Id);
-                return OrderEditResult.OrderArchived;
+
+                return new OrderEditResponse
+                {
+                    Result = OrderEditResult.OrderArchived
+                };
             }
 
             var validation = _validator.Validate(order,
@@ -91,7 +98,11 @@ namespace AccountingSystem.Application.Services
             if (!validation.IsValid)
             {
                 _logger.LogWarning("EditOrder invalid: {Errors}", validation.Errors);
-                return OrderEditResult.InvalidData;
+
+                return new OrderEditResponse
+                {
+                    Result = OrderEditResult.InvalidData
+                };
             }
 
             existing.Status = order.Status;
@@ -102,7 +113,10 @@ namespace AccountingSystem.Application.Services
 
             _logger.LogInformation("Order edited successfully: {OrderId}", order.Id);
 
-            return OrderEditResult.Success;
+            return new OrderEditResponse
+            {
+                Result = OrderEditResult.Success
+            };
         }
 
         // ================= STATUS =================

@@ -1,4 +1,4 @@
-using AccountingSystem.Application.DTOs;
+using AccountingSystem.Application.DTOs.Invoices;
 using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Repositories;

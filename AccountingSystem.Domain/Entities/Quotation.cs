@@ -15,8 +15,14 @@ namespace AccountingSystem.Domain.Entities
         public DateTime DateCreated { get; set; }
 
         public int CustomerId { get; set; }
-        public Customer Customer { get; set; }
+        public Customer Customer { get; set; } 
 
+        // SNAPSHOT CUSTOMER
+        public string CustomerName { get; set; }
+        public string CustomerEmail { get; set; }
+        public string CustomerStreet { get; set; }
+        public string CustomerZipCode { get; set; }
+        public string CustomerCity { get; set; }
         public bool IsQuotationArchived { get; set; }
 
         public ICollection<QuotationItem> Items { get; set; } = new List<QuotationItem>();
@@ -25,6 +31,7 @@ namespace AccountingSystem.Domain.Entities
     public class QuotationItem
     {
         public int Id { get; set; }
+        public string ProductName { get; set; }
 
         public int QuotationId { get; set; }
         public Quotation Quotation { get; set; }
@@ -38,10 +45,9 @@ namespace AccountingSystem.Domain.Entities
 
         public decimal DiscountPercent { get; set; }
 
-        // snapshot price
+        // SNAPSHOT
         public decimal BaseUnitPrice { get; set; }
 
-        public decimal Total =>
-            Quantity * BaseUnitPrice * (1 - DiscountPercent / 100m);
+        public decimal Total { get; set; }
     }
 }

@@ -27,6 +27,12 @@ namespace AccountingSystem.Domain.Entities
         public int CustomerId { get; set; }
 
         public Customer Customer { get; set; }
+        // SNAPSHOT CUSTOMER
+        public string CustomerName { get; set; }
+        public string CustomerEmail { get; set; }
+        public string CustomerStreet { get; set; }
+        public string CustomerZipCode { get; set; }
+        public string CustomerCity { get; set; }
 
         public bool IsInvoiceArchived { get; set; }
 
@@ -53,9 +59,9 @@ namespace AccountingSystem.Domain.Entities
 
         public decimal DiscountPercent { get; set; }
 
+        // SNAPSHOT
         public decimal BaseUnitPrice { get; set; }
 
-        public decimal Total =>
-            Quantity * BaseUnitPrice * (1 - DiscountPercent / 100m);
+        public decimal Total { get; set; }
     }
 }
