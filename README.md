@@ -1,171 +1,295 @@
-﻿# Sales Accounting System (CLI)
+﻿# Sales & Accounting System (.NET 10)
 
 ## Overview
 
-A console-based system for managing sales processes and accounting-ready documents such as quotations, orders, invoices, and payments.
+A console-based business application that simulates a simplified ERP sales and accounting workflow.
 
-The project simulates core business processes used in small and medium-sized companies, including customer management, product management, quotations, orders, invoices, and payment tracking.
+The project models real-world processes used in sales and accounting systems, including customer management, product catalog, quotations, orders, invoices, and payment tracking.
 
-The application follows a layered architecture and uses Entity Framework Core with SQL Server for data persistence.
+The main goal of the project was to practice building a business application using C#, .NET 10, Entity Framework Core, SQL Server, and layered architecture.
+
+The current version uses a CLI interface. REST API and web interface are planned as future development steps.
+
+---
+
+## Business Workflow
+
+The application simulates the following sales process:
+
+
+Customer
+↓
+Quotation
+↓
+Order
+↓
+Invoice
+↓
+Payment
+
+
+The system supports creating and managing business documents through the entire sales lifecycle.
 
 ---
 
 ## Features
 
-### Customer Management
+## Customer Management
 
-* Create customers
-* Update customer information
-* Delete customers
-* View customer list
+- Create customers
+- Update customer information
+- Delete customers
+- View customer list
 
-### Product Management
+## Product Management
 
-* Create products
-* Update product information
-* Delete products
-* View product catalog
+- Create products
+- Update product information
+- Delete products
+- View product catalog
 
-### Quotation Management
+## Quotation Management
 
-* Create quotations
-* Manage quotation items
-* Calculate quotation totals
-* Track quotation status
+- Create quotations
+- Manage quotation items
+- Calculate quotation totals
+- Track quotation status
 
-### Order Management
+## Order Management
 
-* Create orders
-* Manage order items
-* Calculate order totals
-* Track order status
+- Create orders
+- Manage order items
+- Calculate order totals
+- Track order status
+- Convert quotations into orders
 
-### Invoice Management
+## Invoice Management
 
-* Create invoices
-* Calculate invoice totals
-* Track invoice status
+- Create invoices
+- Calculate invoice totals
+- Track invoice status
+- Generate invoices from orders
 
-### Payment Management
+## Payment Management
 
-* Register payments
-* Track payment status
-* Link payments to invoices
-* Monitor invoice settlement
-
----
-
-## Technologies
-
-* C#
-* .NET 8
-* Entity Framework Core
-* SQL Server
-* Dependency Injection
-* Layered Architecture
+- Register payments
+- Link payments to invoices
+- Track payment status
+- Monitor invoice settlement
 
 ---
 
-## Architecture
+# Technologies
 
-The project is organized into four main layers:
-
-### Domain
-
-Contains business entities, enums, and business rules.
-
-### Application
-
-Contains application services, DTOs, validation logic, and business workflows.
-
-### Infrastructure
-
-Handles database access, Entity Framework Core configuration, repositories, and data persistence.
-
-### UI
-
-Console-based user interface responsible for user interaction.
+- C#
+- .NET 10
+- Entity Framework Core
+- SQL Server
+- LINQ
+- Dependency Injection
+- Repository Pattern
+- Unit of Work Pattern
+- DTO Mapping
+- Fluent API
+- Validation
+- Layered Architecture
 
 ---
 
-## Project Structure
+# Architecture
 
-```text
-AccountingSystem
+The project follows a layered architecture approach.
+
+Application flow:
+
+
+UI
+↓
+Application Services
+↓
+Repositories
+↓
+Entity Framework Core
+↓
+SQL Server
+
+
+## Domain
+
+Responsible for core business models and rules.
+
+Contains:
+
+- Entities
+- Enums
+- Business-related logic
+
+Examples:
+
+- Customer
+- Product
+- Order
+- Invoice
+- Payment
+
+---
+
+## Application
+
+Responsible for application logic and business workflows.
+
+Contains:
+
+- Services
+- DTOs
+- Interfaces
+- Mappers
+- Validation logic
+
+This layer does not depend directly on database implementation.
+
+---
+
+## Infrastructure
+
+Responsible for external dependencies.
+
+Contains:
+
+- Entity Framework Core configuration
+- DbContext
+- Repository implementations
+- Database migrations
+
+---
+
+## UI
+
+Console-based interface responsible for user interaction.
+
+The UI communicates only with the application layer.
+
+---
+
+# Project Structure
+
+
+SalesAccountingSystem
+
 │
-├── Domain
-├── Application
-├── Infrastructure
-└── UI
-```
+├── AccountingSystem.Domain
+│
+├── AccountingSystem.Application
+│
+├── AccountingSystem.Infrastructure
+│
+├── AccountingSystem.UI
+│
+└── AccountingSystem.Tests
+
 
 ---
 
-## Database
+# Database
 
-The application uses SQL Server together with Entity Framework Core.
+The application uses SQL Server with Entity Framework Core.
+
+Database changes are managed using EF Core migrations.
+
+Implemented:
+
+- Entity relationships
+- Database constraints
+- Fluent API configuration
+- Schema evolution through migrations
+
 
 Main entities:
 
-* Customer
-* Product
-* Quotation
-* Order
-* Invoice
-* Payment
-
-Relationships between entities are configured using Entity Framework Core Fluent API.
+- Customer
+- Product
+- Quotation
+- Order
+- Invoice
+- Payment
 
 ---
 
-## Getting Started
+# Design Decisions
 
-### Prerequisites
+Some important design choices:
 
-* .NET 8 SDK
-* SQL Server or SQL Server LocalDB
+- Business logic is separated from UI and database layers.
+- DTOs are used to avoid exposing domain entities directly.
+- Repository pattern isolates database access.
+- Services handle business workflows.
+- Dependency Injection is used for better maintainability and testing.
+- EF Core migrations are used to manage database changes.
 
-### Clone Repository
+---
+
+# Getting Started
+
+## Prerequisites
+
+Required:
+
+- .NET 10 SDK
+- SQL Server or SQL Server LocalDB
+
+---
+
+## Clone Repository
 
 ```bash
-git clone https://github.com/grzesiek1201/AccountingSystem.git
-cd AccountingSystem
-```
+git clone https://github.com/grzesiek1201/SalesAccountingSystem.git
 
-### Apply Migrations
-
-```bash
+cd SalesAccountingSystem
+Apply Database Migrations
 dotnet ef database update
-```
-
-### Run Application
-
-```bash
+Run Application
 dotnet run
-```
+Example Usage
 
----
+Typical workflow:
 
-## Learning Goals
+Create customer
+Add products
+Create quotation
+Convert quotation into order
+Generate invoice
+Register payment
+Learning Goals
 
 This project was created to practice:
 
-* Object-Oriented Programming (OOP)
-* SOLID Principles
-* Layered Architecture
-* Entity Framework Core
-* SQL Server Integration
-* Data Validation
-* Dependency Injection
-* Business Process Modeling
+Object-Oriented Programming
+SOLID principles
+Clean code practices
+Layered architecture
+Entity Framework Core
+SQL Server integration
+Database migrations
+Repository pattern
+Dependency Injection
+Business process modeling
+Planned Improvements
 
----
+Current development roadmap:
 
-## Planned Improvements
+Unit Tests (xUnit)
+Logging
+User authentication and authorization
+Roles and permissions
+REST API with ASP.NET Core
+Reporting module
+ASP.NET Core frontend
+Future Direction
 
-* Unit Tests
-* Logging
-* Quotation → Order → Invoice workflow
-* Reporting Module
-* REST API
-* ASP.NET Core Frontend
+The long-term goal is to transform the application into a small business management system with:
+
+Web API
+User management
+Role-based access
+Better reporting
+Web interface

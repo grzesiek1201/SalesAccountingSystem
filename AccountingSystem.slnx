@@ -1,7 +1,10 @@
 <Solution>
+  <Project Path="AccountingSystem.API/AccountingSystem.API.csproj" Id="6365e4c6-90d9-45ad-8f7e-774c17c897fd" />
   <Project Path="AccountingSystem.Application/AccountingSystem.Application.csproj" />
   <Project Path="AccountingSystem.Domain/AccountingSystem.Domain.csproj" />
   <Project Path="AccountingSystem.Infrastructure/AccountingSystem.Infrastructure.csproj" />
   <Project Path="AccountingSystem.Tests/AccountingSystem.Tests.csproj" />
-  <Project Path="AccountingSystem.UI/AccountingSystem.UI.csproj" />
+  <Project Path="AccountingSystem.UI/AccountingSystem.UI.csproj">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
 </Solution>
