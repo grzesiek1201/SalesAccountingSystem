@@ -37,6 +37,7 @@ builder.Services.AddScoped<NumberSequenceService>();
 builder.Services.AddScoped<QuotationToOrderMapper>();
 builder.Services.AddScoped<OrderToInvoiceMapper>();
 builder.Services.AddScoped<DocumentConversionService>();
+builder.Services.AddScoped<QuotationResponseMapper>();
 
 // VALIDATORS
 builder.Services.AddScoped<CustomerValidator>();
