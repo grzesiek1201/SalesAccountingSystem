@@ -1,4 +1,4 @@
-using AccountingSystem.Application.DTOs;
+using AccountingSystem.Application.DTOs.Products;
 using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Validation.Products;
@@ -62,7 +62,7 @@ namespace AccountingSystem.Application.Services
 
         // ================= EDIT =================
 
-        public ProductEditResult EditProduct(Product product)
+        public ProductEditResponse EditProduct(Product product)
         {
             _logger.LogInformation("Starting EditProduct. Id: {ProductId}", product.Id);
 
@@ -71,13 +71,20 @@ namespace AccountingSystem.Application.Services
             if (existing == null)
             {
                 _logger.LogWarning("Product not found. Id: {ProductId}", product.Id);
-                return ProductEditResult.NotFound;
+                return new ProductEditResponse
+                {
+                    Result = ProductEditResult.NotFound
+                };
             }
 
             if (existing.IsProductArchived)
             {
                 _logger.LogWarning("Attempt to edit archived product. Id: {ProductId}", product.Id);
-                return ProductEditResult.ProductArchived;
+                return new ProductEditResponse
+                {
+                    Result = ProductEditResult.ProductArchived
+                };
+                
             }
 
             var otherProducts = _productRepository
@@ -92,7 +99,10 @@ namespace AccountingSystem.Application.Services
                 _logger.LogWarning("EditProduct validation failed. Id: {ProductId}, Errors: {Errors}",
                     product.Id, result.Errors);
 
-                return ProductEditResult.InvalidData;
+                return new ProductEditResponse
+                {
+                    Result = ProductEditResult.InvalidData
+                };
             }
 
             existing.Name = product.Name;
@@ -104,7 +114,10 @@ namespace AccountingSystem.Application.Services
 
             _logger.LogInformation("Product updated successfully. Id: {ProductId}", product.Id);
 
-            return ProductEditResult.Success;
+            return new ProductEditResponse
+            {
+                Result = ProductEditResult.Success
+            };
         }
 
         // ================= READ =================

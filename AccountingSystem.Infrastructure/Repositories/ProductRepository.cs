@@ -18,7 +18,15 @@ namespace AccountingSystem.Infrastructure.Repositories
             => _context.Products.AsNoTracking().ToList();
 
         public Product? GetById(int id)
-            => _context.Products.FirstOrDefault(x => x.Id == id);
+            => _context.Products
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == id);
+
+        public List<Product> GetByIds(List<int> ids)
+            => _context.Products
+                .AsNoTracking()
+                .Where(p => ids.Contains(p.Id))
+                .ToList();
 
         public void Add(Product product)
             => _context.Products.Add(product);

@@ -7,6 +7,7 @@ namespace AccountingSystem.Application.Repositories
     {
         List<Product> GetAll();
         Product? GetById(int id);
+        List<Product> GetByIds(List<int> ids);
         void Add(Product product);
         void Update(Product product);
     }

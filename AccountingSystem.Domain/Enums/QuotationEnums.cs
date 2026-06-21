@@ -19,7 +19,7 @@ namespace AccountingSystem.Domain.Enums
         QuotationConverted
     }
 
-    public enum ArchiveQuotationResult
+    public enum QuotationArchiveResult
     {
         Success,
         NotFound,
