@@ -15,6 +15,9 @@ namespace AccountingSystem.Application.Mappers
             var invoice = new Invoice
             {
                 CustomerId = order.CustomerId,
+                CustomerName = order.CustomerName,
+                CustomerStreet = order.CustomerStreet,
+                CustomerZipCode = order.CustomerZipCode,
                 DateCreated = DateTime.Now,
                 IssueDate = DateTime.Now,
                 DueDate = DateTime.Now.AddDays(14),

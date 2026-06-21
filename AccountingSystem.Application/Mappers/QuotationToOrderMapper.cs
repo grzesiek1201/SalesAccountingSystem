@@ -14,9 +14,12 @@ namespace AccountingSystem.Application.Mappers
             var order = new Order
             {
                 CustomerId = quotation.CustomerId,
+                CustomerName = quotation.CustomerName,
+                CustomerStreet = quotation.CustomerStreet,
+                CustomerZipCode = quotation.CustomerZipCode,
                 DateCreated = DateTime.Now,
                 Status = OrderStatus.Draft,
-                QuotationId = quotation.Id, 
+                QuotationId = quotation.Id,
                 Items = quotation.Items.Select(q => new OrderItem
                 {
                     ProductId = q.ProductId,
