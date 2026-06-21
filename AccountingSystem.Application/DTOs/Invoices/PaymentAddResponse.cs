@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AccountingSystem.Application.DTOs
+namespace AccountingSystem.Application.DTOs.Invoices
 {
     public class PaymentAddResponse
     {
