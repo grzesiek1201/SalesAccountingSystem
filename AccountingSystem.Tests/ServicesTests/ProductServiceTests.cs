@@ -139,7 +139,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditProduct(product);
 
-            Assert.Equal(ProductEditResult.Success, result);
+            Assert.Equal(ProductEditResult.Success, result.Result);
 
             _repoMock.Verify(r => r.Update(product), Times.Once);
             _uowMock.Verify(u => u.Save(), Times.Once);
@@ -155,7 +155,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditProduct(product);
 
-            Assert.Equal(ProductEditResult.NotFound, result);
+            Assert.Equal(ProductEditResult.NotFound, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Product>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
@@ -172,7 +172,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditProduct(product);
 
-            Assert.Equal(ProductEditResult.ProductArchived, result);
+            Assert.Equal(ProductEditResult.ProductArchived, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Product>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
@@ -192,7 +192,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditProduct(product);
 
-            Assert.Equal(ProductEditResult.InvalidData, result);
+            Assert.Equal(ProductEditResult.InvalidData, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Product>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);

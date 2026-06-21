@@ -13,6 +13,7 @@ namespace AccountingSystem.Tests.ServicesTests
     public class QuotationServiceTests
     {
         private readonly Mock<IQuotationRepository> _repoMock;
+        private readonly Mock<ICustomerRepository> _customerRepoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<ILogger<QuotationService>> _loggerMock;
         private readonly Mock<NumberSequenceService> _seqMock;
@@ -24,6 +25,7 @@ namespace AccountingSystem.Tests.ServicesTests
         public QuotationServiceTests()
         {
             _repoMock = new Mock<IQuotationRepository>();
+            _customerRepoMock = new Mock<ICustomerRepository>();
             _uowMock = new Mock<IUnitOfWork>();
             _loggerMock = new Mock<ILogger<QuotationService>>();
             _seqMock = new Mock<NumberSequenceService>();
@@ -35,8 +37,8 @@ namespace AccountingSystem.Tests.ServicesTests
                 _validator,
                 _uowMock.Object,
                 _loggerMock.Object,
-                _seqMock.Object
-
+                _seqMock.Object,
+                _customerRepoMock.Object
             );
         }
 
@@ -150,7 +152,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditQuotation(quotation);
 
-            Assert.Equal(QuotationEditResult.Success, result);
+            Assert.Equal(QuotationEditResult.Success, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Quotation>()), Times.Once);
             _uowMock.Verify(u => u.Save(), Times.Once);
@@ -166,7 +168,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditQuotation(quotation);
 
-            Assert.Equal(QuotationEditResult.NotFound, result);
+            Assert.Equal(QuotationEditResult.NotFound, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Quotation>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
@@ -182,7 +184,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditQuotation(quotation);
 
-            Assert.Equal(QuotationEditResult.QuotationArchived, result);
+            Assert.Equal(QuotationEditResult.QuotationArchived, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Quotation>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
@@ -198,7 +200,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditQuotation(quotation);
 
-            Assert.Equal(QuotationEditResult.InvalidData, result);
+            Assert.Equal(QuotationEditResult.InvalidData, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Quotation>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
@@ -216,7 +218,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.ArchiveQuotation(quotation.Id);
 
-            Assert.Equal(ArchiveQuotationResult.Success, result);
+            Assert.Equal(QuotationArchiveResult.Success, result);
 
             _repoMock.Verify(r => r.Update(quotation), Times.Once);
             _uowMock.Verify(u => u.Save(), Times.Once);
@@ -230,7 +232,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.ArchiveQuotation(1);
 
-            Assert.Equal(ArchiveQuotationResult.NotFound, result);
+            Assert.Equal(QuotationArchiveResult.NotFound, result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Quotation>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);

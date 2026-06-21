@@ -163,7 +163,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditOrder(order);
 
-            Assert.Equal(OrderEditResult.NotFound, result);
+            Assert.Equal(OrderEditResult.NotFound, result.Result);
         }
 
         [Fact]
@@ -176,7 +176,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditOrder(order);
 
-            Assert.Equal(OrderEditResult.OrderArchived, result);
+            Assert.Equal(OrderEditResult.OrderArchived, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Order>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
@@ -195,7 +195,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditOrder(order);
 
-            Assert.Equal(OrderEditResult.InvalidData, result);
+            Assert.Equal(OrderEditResult.InvalidData, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Order>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
@@ -214,7 +214,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditOrder(order);
 
-            Assert.Equal(OrderEditResult.Success, result);
+            Assert.Equal(OrderEditResult.Success, result.Result);
 
             _repoMock.Verify(r => r.Update(order), Times.Once);
             _uowMock.Verify(u => u.Save(), Times.Once);
