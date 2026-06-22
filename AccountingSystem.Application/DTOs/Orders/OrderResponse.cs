@@ -1,8 +1,6 @@
-﻿using AccountingSystem.API.DTOs.Customers;
-using AccountingSystem.API.DTOs.Quotations;
-using AccountingSystem.Application.DTOs.Customers;
+﻿using AccountingSystem.Application.DTOs.Customers;
 
-namespace AccountingSystem.API.DTOs.Orders
+namespace AccountingSystem.Application.DTOs.Orders
 {
     public class OrderResponse
     {

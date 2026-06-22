@@ -15,6 +15,8 @@ namespace AccountingSystem.Tests.ServicesTests
     public class OrderServiceTests
     {
         private readonly Mock<IOrderRepository> _repoMock;
+        private readonly Mock<ICustomerRepository> _customerRepoMock;
+        private readonly Mock<IProductRepository> _productRepoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<ILogger<OrderService>> _loggerMock;
         private readonly Mock<NumberSequenceService> _seqMock;
@@ -26,9 +28,11 @@ namespace AccountingSystem.Tests.ServicesTests
         public OrderServiceTests()
         {
             _repoMock = new Mock<IOrderRepository>();
+            _customerRepoMock = new Mock<ICustomerRepository>();
             _uowMock = new Mock<IUnitOfWork>();
             _loggerMock = new Mock<ILogger<OrderService>>();
             _seqMock = new Mock<NumberSequenceService>();
+            _productRepoMock = new Mock<IProductRepository>();
 
 
             _validator = new OrderValidator();
@@ -38,7 +42,9 @@ namespace AccountingSystem.Tests.ServicesTests
                 _validator,
                 _uowMock.Object,
                 _loggerMock.Object,
-                _seqMock.Object
+                _seqMock.Object,
+                _customerRepoMock.Object,
+                _productRepoMock.Object
             );
         }
 

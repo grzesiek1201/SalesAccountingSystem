@@ -45,10 +45,16 @@ namespace AccountingSystem.Application.Helpers.Snapshots
                 return new OrderItem
                 {
                     ProductId = i.ProductId,
+                    ProductName = product.Name,
                     Quantity = i.Quantity,
                     DiscountPercent = i.DiscountPercent,
                     Position = i.Position,
-                    BaseUnitPrice = product.Price
+                    BaseUnitPrice = product.Price,
+
+                    Total = Math.Round(
+                    i.Quantity * product.Price * (1 - i.DiscountPercent / 100m),
+                    2,
+                    MidpointRounding.AwayFromZero)
                 };
             }).ToList();
         }
@@ -65,10 +71,16 @@ namespace AccountingSystem.Application.Helpers.Snapshots
                 return new InvoiceItem
                 {
                     ProductId = i.ProductId,
+                    ProductName = product.Name,
                     Quantity = i.Quantity,
                     DiscountPercent = i.DiscountPercent,
                     Position = i.Position,
-                    BaseUnitPrice = product.Price
+                    BaseUnitPrice = product.Price,
+
+                    Total = Math.Round(
+                    i.Quantity * product.Price * (1 - i.DiscountPercent / 100m),
+                    2,
+                    MidpointRounding.AwayFromZero)
                 };
             }).ToList();
         }

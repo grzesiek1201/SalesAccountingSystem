@@ -1,6 +1,4 @@
-﻿using AccountingSystem.API.DTOs.Quotations;
-
-namespace AccountingSystem.API.DTOs.Orders
+﻿namespace AccountingSystem.API.DTOs.Orders
 {
     public class UpdateOrderRequest
     {
