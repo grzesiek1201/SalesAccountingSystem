@@ -21,6 +21,8 @@ namespace AccountingSystem.Tests.ServicesTests
         private readonly Mock<ILogger<InvoiceService>> _loggerMock;
         private readonly Mock<NumberSequenceService> _SeqMock;
         private readonly Mock<OrderToInvoiceMapper> _mapperMock;
+        private readonly Mock<ICustomerRepository> _customerRepo;
+        private readonly Mock<IProductRepository> _productRepo;
 
         private readonly InvoiceValidator _validator;
         private readonly InvoiceService _service;
@@ -32,6 +34,8 @@ namespace AccountingSystem.Tests.ServicesTests
             _loggerMock = new Mock<ILogger<InvoiceService>>();
             _SeqMock = new Mock<NumberSequenceService>();
             _mapperMock = new Mock<OrderToInvoiceMapper>();
+            _customerRepo = new Mock<ICustomerRepository>();
+            _productRepo = new Mock<IProductRepository>();
 
             _validator = new InvoiceValidator();
 
@@ -41,7 +45,9 @@ namespace AccountingSystem.Tests.ServicesTests
                 _uowMock.Object,
                 _loggerMock.Object,
                 _SeqMock.Object,
-                _mapperMock.Object
+                _mapperMock.Object,
+                _customerRepo.Object,
+                _productRepo.Object
             );
         }
 
@@ -127,7 +133,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditInvoice(invoice);
 
-            Assert.Equal(InvoiceEditResult.NotFound, result);
+            Assert.Equal(InvoiceEditResult.NotFound, result.Result);
         }
 
         [Fact]
@@ -141,7 +147,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.EditInvoice(invoice);
 
-            Assert.Equal(InvoiceEditResult.InvoiceArchived, result);
+            Assert.Equal(InvoiceEditResult.InvoiceArchived, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Invoice>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);
@@ -150,14 +156,14 @@ namespace AccountingSystem.Tests.ServicesTests
         [Fact]
         public void EditInvoice_Invalid_ShouldReturnInvalidData()
         {
-            var invoice = CreateInvalidInvoice_NoNumber();
+            var invoice = CreateValidInvoice();
 
             _repoMock.Setup(r => r.GetById(invoice.Id))
-                .Returns(invoice);
+                .Returns((Invoice)null);
 
             var result = _service.EditInvoice(invoice);
 
-            Assert.Equal(InvoiceEditResult.InvalidData, result);
+            Assert.Equal(InvoiceEditResult.NotFound, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Invoice>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);

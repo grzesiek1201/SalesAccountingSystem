@@ -1,4 +1,6 @@
 using AccountingSystem.Application.DTOs.Invoices;
+using AccountingSystem.Application.DTOs.Order;
+using AccountingSystem.Application.Helpers.Snapshots;
 using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Repositories;
@@ -6,8 +8,6 @@ using AccountingSystem.Application.Validation.Invoices;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace AccountingSystem.Application.Services
 {
@@ -19,6 +19,8 @@ namespace AccountingSystem.Application.Services
         private readonly ILogger<InvoiceService> _logger;
         private readonly NumberSequenceService _numberSequenceService;
         private readonly OrderToInvoiceMapper _mapper;
+        private readonly ICustomerRepository _customerRepository;
+        private readonly IProductRepository _productRepository;
 
         public InvoiceService(
             IInvoiceRepository invoiceRepository,
@@ -26,7 +28,9 @@ namespace AccountingSystem.Application.Services
             IUnitOfWork unitOfWork,
             ILogger<InvoiceService> logger,
             NumberSequenceService numberSequenceService,
-            OrderToInvoiceMapper mapper)
+            OrderToInvoiceMapper mapper,
+            ICustomerRepository customerRepository,
+            IProductRepository productRepository)
         {
             _invoiceRepository = invoiceRepository;
             _validator = validator;
@@ -34,16 +38,36 @@ namespace AccountingSystem.Application.Services
             _logger = logger;
             _numberSequenceService = numberSequenceService;
             _mapper = mapper;
+            _customerRepository = customerRepository;
+            _productRepository = productRepository;
         }
 
         // ================= ADD =================
 
         public InvoiceAddResponse AddInvoice(Invoice invoice)
         {
-            _logger.LogInformation("AddInvoice start. CustomerId: {CustomerId}", invoice.Customer?.Id);
+            _logger.LogInformation("AddInvoice start. CustomerId: {CustomerId}", invoice.CustomerId);
+
+            var customer = _customerRepository.GetById(invoice.CustomerId);
+            if (customer == null)
+                return new InvoiceAddResponse { Result = InvoiceAddResult.InvalidData };
+
+            var productIds = invoice.Items?
+                .Select(i => i.ProductId)
+                .ToList() ?? new List<int>();
+
+            var products = _productRepository
+                .GetByIds(productIds)
+                .ToDictionary(p => p.Id);
 
             invoice.InvoiceNumber =
                 _numberSequenceService.GetNext(DocumentType.Invoice);
+
+            invoice.ApplyCustomerSnapshot(customer);
+
+            invoice.Items = ItemSnapshotHelper.SnapshotInvoiceItems(
+                invoice.Items,
+                products);
 
             var validation = _validator.Validate(
                 invoice,
@@ -51,7 +75,7 @@ namespace AccountingSystem.Application.Services
 
             if (!validation.IsValid)
             {
-                _logger.LogWarning("AddInvoice validation failed. Errors: {Errors}", validation.Errors);
+                _logger.LogWarning("AddInvoice invalid: {Errors}", validation.Errors);
 
                 return new InvoiceAddResponse
                 {
@@ -63,14 +87,13 @@ namespace AccountingSystem.Application.Services
             _invoiceRepository.Add(invoice);
             _unitOfWork.Save();
 
-            _logger.LogInformation("Invoice added successfully. InvoiceId: {InvoiceId}", invoice.Id);
+            _logger.LogInformation("Invoice created: {Id}", invoice.Id);
 
             return new InvoiceAddResponse
             {
                 Result = InvoiceAddResult.Success
             };
         }
-
         // ================= CREATE FROM ORDER =================
 
         public InvoiceAddResponse CreateFromOrder(Order order)
@@ -129,44 +152,64 @@ namespace AccountingSystem.Application.Services
 
         // ================= EDIT =================
 
-        public InvoiceEditResult EditInvoice(Invoice invoice)
+        public InvoiceEditResponse EditInvoice(Invoice input)
         {
-            _logger.LogInformation("Starting EditInvoice. InvoiceId: {InvoiceId}", invoice.Id);
+            _logger.LogInformation("EditInvoice start. Id: {Id}", input.Id);
 
-            var existing = _invoiceRepository.GetById(invoice.Id);
+            var existing = _invoiceRepository.GetById(input.Id);
 
             if (existing == null)
-            {
-                _logger.LogWarning("Invoice not found. Id: {InvoiceId}", invoice.Id);
-                return InvoiceEditResult.NotFound;
-            }
+                return new InvoiceEditResponse { Result = InvoiceEditResult.NotFound };
 
             if (existing.IsInvoiceArchived)
+                return new InvoiceEditResponse { Result = InvoiceEditResult.InvoiceArchived };
+
+            var productIds = input.Items?.Select(i => i.ProductId).ToList() ?? new List<int>();
+
+            var products = _productRepository
+                .GetByIds(productIds)
+                .ToDictionary(p => p.Id);
+
+            if (input.Items != null && input.Items.Any())
             {
-                _logger.LogWarning("Attempt to edit archived invoice. Id: {InvoiceId}", invoice.Id);
-                return InvoiceEditResult.InvoiceArchived;
+                var itemProductIds = input.Items.Select(i => i.ProductId).ToList();
+
+                var productDict = _productRepository
+                    .GetByIds(productIds)
+                    .ToDictionary(p => p.Id);
+
+                existing.Items = ItemSnapshotHelper.SnapshotInvoiceItems(
+                    input.Items,
+                    products);
             }
 
-            var validation = _validator.Validate(invoice,
-                _invoiceRepository.GetAll().Where(x => x.Id != invoice.Id).ToList());
+            if (input.CustomerId != 0 && input.CustomerId != existing.CustomerId)
+            {
+                var customer = _customerRepository.GetById(input.CustomerId);
+                if (customer == null)
+                    return new InvoiceEditResponse { Result = InvoiceEditResult.InvalidData };
+
+                existing.ApplyCustomerSnapshot(customer);
+            }
+
+            if (input.Status != default)
+                existing.Status = input.Status;
+
+            var validation = _validator.Validate(
+                existing,
+                _invoiceRepository.GetAll().Where(x => x.Id != existing.Id).ToList(),
+                isEdit: true);
 
             if (!validation.IsValid)
-            {
-                _logger.LogWarning("EditInvoice validation failed. Id: {InvoiceId}, Errors: {Errors}",
-                    invoice.Id, validation.Errors);
-
-                return InvoiceEditResult.InvalidData;
-            }
-
-            existing.Status = invoice.Status;
-            existing.Customer = invoice.Customer;
+                return new InvoiceEditResponse { Result = InvoiceEditResult.InvalidData };
 
             _invoiceRepository.Update(existing);
             _unitOfWork.Save();
 
-            _logger.LogInformation("Invoice edited successfully. Id: {InvoiceId}", invoice.Id);
-
-            return InvoiceEditResult.Success;
+            return new InvoiceEditResponse
+            {
+                Result = InvoiceEditResult.Success
+            };
         }
 
         // ================= STATUS =================

@@ -6,7 +6,9 @@ namespace AccountingSystem.Application.Validation.Invoices
 {
     public class InvoiceValidator
     {
-        public InvoiceValidationResult Validate(Invoice invoice, List<Invoice> invoices)
+        public InvoiceValidationResult Validate(Invoice invoice,
+            List<Invoice> invoices,
+            bool isEdit = false)
         {
             var result = new InvoiceValidationResult();
 
@@ -19,10 +21,25 @@ namespace AccountingSystem.Application.Validation.Invoices
             if (invoice.CustomerId <= 0)
                 result.Errors.Add(InvoiceValidationError.EmptyCustomer);
 
-            if (invoice.Items == null || invoice.Items.Count == 0)
-                result.Errors.Add(InvoiceValidationError.NoItems);
 
-            else
+            if (invoice.DateCreated == default && !isEdit)
+                result.Errors.Add(InvoiceValidationError.InvalidDateCreated);
+
+            if (!isEdit)
+            {
+                if (invoice.Items == null || invoice.Items.Count == 0)
+                {
+
+                    result.Errors.Add(InvoiceValidationError.NoItems);
+                    return result;
+                }
+
+
+                if (string.IsNullOrWhiteSpace(invoice.InvoiceNumber))
+                    result.Errors.Add(InvoiceValidationError.EmptyInvoiceNumber);
+            }
+
+            if (invoice.Items != null && invoice.Items.Any())
             {
                 foreach (var item in invoice.Items)
                 {
@@ -59,12 +76,6 @@ namespace AccountingSystem.Application.Validation.Invoices
 
             if (invoice.DueDate == default)
                 result.Errors.Add(InvoiceValidationError.InvalidDueDate);
-
-            if (invoice.DateCreated == default)
-                result.Errors.Add(InvoiceValidationError.InvalidDateCreated);
-
-            if (string.IsNullOrWhiteSpace(invoice.InvoiceNumber))
-                result.Errors.Add(InvoiceValidationError.EmptyInvoiceNumber);
 
             return result;
         }
