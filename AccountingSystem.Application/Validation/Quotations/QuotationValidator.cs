@@ -1,6 +1,4 @@
 using AccountingSystem.Domain.Entities;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace AccountingSystem.Application.Validation.Quotations
 {

@@ -17,6 +17,7 @@ namespace AccountingSystem.Tests.ServicesTests
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<ILogger<QuotationService>> _loggerMock;
         private readonly Mock<NumberSequenceService> _seqMock;
+        private readonly Mock<IProductRepository> _productRepoMock;
 
 
         private readonly QuotationValidator _validator;
@@ -29,8 +30,9 @@ namespace AccountingSystem.Tests.ServicesTests
             _uowMock = new Mock<IUnitOfWork>();
             _loggerMock = new Mock<ILogger<QuotationService>>();
             _seqMock = new Mock<NumberSequenceService>();
+            _productRepoMock = new Mock<IProductRepository>();
 
-        _validator = new QuotationValidator();
+            _validator = new QuotationValidator();
 
             _service = new QuotationService(
                 _repoMock.Object,
@@ -38,7 +40,8 @@ namespace AccountingSystem.Tests.ServicesTests
                 _uowMock.Object,
                 _loggerMock.Object,
                 _seqMock.Object,
-                _customerRepoMock.Object
+                _customerRepoMock.Object,
+                _productRepoMock.Object
             );
         }
 

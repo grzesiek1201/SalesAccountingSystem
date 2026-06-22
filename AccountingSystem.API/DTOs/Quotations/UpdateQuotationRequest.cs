@@ -1,7 +1,4 @@
-﻿using AccountingSystem.Domain.Entities;
-using AccountingSystem.Domain.Enums;
-
-namespace AccountingSystem.API.DTOs.Quotations
+﻿namespace AccountingSystem.API.DTOs.Quotations
 {
     public class UpdateQuotationRequest
     {

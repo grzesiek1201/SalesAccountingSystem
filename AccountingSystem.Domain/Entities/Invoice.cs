@@ -45,6 +45,8 @@ namespace AccountingSystem.Domain.Entities
     {
         public int Id { get; set; }
 
+        public string ProductName { get; set; }
+
         public int InvoiceId { get; set; }
 
         public Invoice Invoice { get; set; }

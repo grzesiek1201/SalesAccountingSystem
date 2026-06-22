@@ -38,6 +38,8 @@ builder.Services.AddScoped<QuotationToOrderMapper>();
 builder.Services.AddScoped<OrderToInvoiceMapper>();
 builder.Services.AddScoped<DocumentConversionService>();
 builder.Services.AddScoped<QuotationResponseMapper>();
+builder.Services.AddScoped<OrderResponseMapper>();
+builder.Services.AddScoped<InvoiceResponseMapper>();
 
 // VALIDATORS
 builder.Services.AddScoped<CustomerValidator>();

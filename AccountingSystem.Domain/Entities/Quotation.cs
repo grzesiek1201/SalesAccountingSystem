@@ -1,6 +1,4 @@
 using AccountingSystem.Domain.Enums;
-using System;
-using System.Collections.Generic;
 
 namespace AccountingSystem.Domain.Entities
 {
