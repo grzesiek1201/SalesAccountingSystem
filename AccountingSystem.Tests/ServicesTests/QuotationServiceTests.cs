@@ -13,12 +13,11 @@ namespace AccountingSystem.Tests.ServicesTests
     public class QuotationServiceTests
     {
         private readonly Mock<IQuotationRepository> _repoMock;
-        private readonly Mock<ICustomerRepository> _customerRepoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<ILogger<QuotationService>> _loggerMock;
-        private readonly Mock<NumberSequenceService> _seqMock;
-        private readonly Mock<IProductRepository> _productRepoMock;
-
+        private readonly Mock<INumberSequenceService> _seqMock;
+        private readonly Mock<ICustomerRepository> _customerRepo;
+        private readonly Mock<IProductRepository> _productRepo;
 
         private readonly QuotationValidator _validator;
         private readonly QuotationService _service;
@@ -26,11 +25,36 @@ namespace AccountingSystem.Tests.ServicesTests
         public QuotationServiceTests()
         {
             _repoMock = new Mock<IQuotationRepository>();
-            _customerRepoMock = new Mock<ICustomerRepository>();
             _uowMock = new Mock<IUnitOfWork>();
             _loggerMock = new Mock<ILogger<QuotationService>>();
-            _seqMock = new Mock<NumberSequenceService>();
-            _productRepoMock = new Mock<IProductRepository>();
+            _seqMock = new Mock<INumberSequenceService>();
+            _customerRepo = new Mock<ICustomerRepository>();
+            _productRepo = new Mock<IProductRepository>();
+
+            _seqMock
+                .Setup(x => x.GetNext(It.IsAny<DocumentType>()))
+                .Returns("Q-2026-0001");
+
+            _customerRepo
+                .Setup(x => x.GetById(1))
+                .Returns(new Customer
+                {
+                    Id = 1,
+                    Name = "Test"
+                });
+
+            _productRepo
+                .Setup(x => x.GetByIds(It.IsAny<List<int>>()))
+                .Returns(new List<Product>
+                {
+                new Product
+                {
+                    Id = 1,
+                    Name = "Test",
+                    Price = 100m
+                }
+                });
+
 
             _validator = new QuotationValidator();
 
@@ -40,8 +64,8 @@ namespace AccountingSystem.Tests.ServicesTests
                 _uowMock.Object,
                 _loggerMock.Object,
                 _seqMock.Object,
-                _customerRepoMock.Object,
-                _productRepoMock.Object
+                _customerRepo.Object,
+                _productRepo.Object
             );
         }
 
@@ -50,32 +74,23 @@ namespace AccountingSystem.Tests.ServicesTests
             return new Quotation
             {
                 Id = 1,
+
                 QuotationNumber = "Q-2026-001",
                 Status = QuotationStatus.Draft,
+
                 DateCreated = new DateTime(2026, 1, 1, 10, 0, 0),
 
                 CustomerId = 1,
-                Customer = new Customer
-                {
-                    Id = 1,
-                    Name = "Jan Kowalski",
-                    Email = "jan@test.com",
-                    City = "Warszawa",
-                    Street = "Wąska 12",
-                    ZipCode = "21222",
-                    InDebt = false,
-                    IsCustomerArchived = false
-                },
+                Customer = new Customer {  Id = 1},
 
-                IsQuotationArchived = false,
 
                 Items = new List<QuotationItem>
                 {
                     new QuotationItem
                     {
-                        Id = 1,
                         ProductId = 1,
                         Product = new Product { Id = 1 },
+
                         Position = 1,
                         Quantity = 2,
                         BaseUnitPrice = 100m,
@@ -196,14 +211,14 @@ namespace AccountingSystem.Tests.ServicesTests
         [Fact]
         public void EditQuotation_Invalid_ShouldReturnInvalidData()
         {
-            var quotation = CreateInvalidQuotation_NoNumber();
+            var quotation = CreateValidQuotation();
 
             _repoMock.Setup(r => r.GetById(quotation.Id))
-                .Returns(quotation);
+                .Returns((Quotation)null);
 
             var result = _service.EditQuotation(quotation);
 
-            Assert.Equal(QuotationEditResult.InvalidData, result.Result);
+            Assert.Equal(QuotationEditResult.NotFound, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Quotation>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);

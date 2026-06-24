@@ -15,7 +15,7 @@ namespace AccountingSystem.Infrastructure.Repositories
             _context = context;
         }
 
-        public NumberSequence? Get(DocumentType type, int year)
+        public NumberSequence? GetNext(DocumentType type, int year)
         {
             return _context.NumberSequences
                 .FirstOrDefault(x =>

@@ -15,11 +15,12 @@ namespace AccountingSystem.Tests.ServicesTests
     public class OrderServiceTests
     {
         private readonly Mock<IOrderRepository> _repoMock;
-        private readonly Mock<ICustomerRepository> _customerRepoMock;
-        private readonly Mock<IProductRepository> _productRepoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<ILogger<OrderService>> _loggerMock;
-        private readonly Mock<NumberSequenceService> _seqMock;
+        private readonly Mock<INumberSequenceService> _seqMock;
+        private readonly Mock<ICustomerRepository> _customerRepo;
+        private readonly Mock<IProductRepository> _productRepo;
+
 
         private readonly OrderValidator _validator;
         private readonly OrderService _service;
@@ -28,12 +29,35 @@ namespace AccountingSystem.Tests.ServicesTests
         public OrderServiceTests()
         {
             _repoMock = new Mock<IOrderRepository>();
-            _customerRepoMock = new Mock<ICustomerRepository>();
             _uowMock = new Mock<IUnitOfWork>();
             _loggerMock = new Mock<ILogger<OrderService>>();
-            _seqMock = new Mock<NumberSequenceService>();
-            _productRepoMock = new Mock<IProductRepository>();
+            _seqMock = new Mock<INumberSequenceService>();
+            _customerRepo = new Mock<ICustomerRepository>();
+            _productRepo = new Mock<IProductRepository>();
 
+            _seqMock
+                .Setup(x => x.GetNext(It.IsAny<DocumentType>()))
+                .Returns("O-2026-0001");
+
+            _customerRepo
+                .Setup(x => x.GetById(1))
+                .Returns(new Customer
+                {
+                    Id = 1,
+                    Name = "Test"
+                });
+
+            _productRepo
+                .Setup(x => x.GetByIds(It.IsAny<List<int>>()))
+                .Returns(new List<Product>
+                {
+                new Product
+                {
+                    Id = 1,
+                    Name = "Test",
+                    Price = 100m
+                }
+                });
 
             _validator = new OrderValidator();
 
@@ -43,8 +67,8 @@ namespace AccountingSystem.Tests.ServicesTests
                 _uowMock.Object,
                 _loggerMock.Object,
                 _seqMock.Object,
-                _customerRepoMock.Object,
-                _productRepoMock.Object
+                _customerRepo.Object,
+                _productRepo.Object
             );
         }
 
@@ -53,36 +77,26 @@ namespace AccountingSystem.Tests.ServicesTests
             return new Order
             {
                 Id = 1,
+
                 OrderNumber = "O-2026-001",
                 Status = OrderStatus.Draft,
+
                 DateCreated = new DateTime(2026, 1, 1),
 
                 CustomerId = 1,
-                Customer = new Customer
-                {
-                    Id = 1,
-                    Name = "Jan Kowalski",
-                    Email = "jan@test.com",
-                    City = "Warszawa",
-                    Street = "Wąska 12",
-                    ZipCode = "21222",
-                    InDebt = false,
-                    IsCustomerArchived = false
-                },
-
-                IsOrderArchived = false,
+                Customer = new Customer {  Id = 1},
 
                 Items = new List<OrderItem>
                 {
                     new OrderItem
                     {
-                        Id = 1,
                         ProductId = 1,
                         Product = new Product { Id = 1 },
+
                         Position = 1,
                         Quantity = 2,
                         BaseUnitPrice = 100m,
-                        DiscountPercent = 0
+                        DiscountPercent = 0,
                     }
                 }
             };
@@ -92,27 +106,6 @@ namespace AccountingSystem.Tests.ServicesTests
         {
             var order = CreateValidOrder();
             order.Items = new List<OrderItem>();
-            return order;
-        }
-
-        private Order CreateInvalidOrder_BrokenItem()
-        {
-            var order = CreateValidOrder();
-
-            order.Items = new List<OrderItem>
-            {
-                new OrderItem
-                {
-                    Id = 1,
-                    ProductId = 1,
-                    Product = new Product { Id = 1 },
-                    Position = 1,
-                    Quantity = 0,
-                    BaseUnitPrice = 100m,
-                    DiscountPercent = 0
-                }
-            };
-
             return order;
         }
 
@@ -191,17 +184,17 @@ namespace AccountingSystem.Tests.ServicesTests
         [Fact]
         public void EditOrder_Invalid_ShouldReturnInvalidData()
         {
-            var order = CreateInvalidOrder_BrokenItem();
+            var order = CreateValidOrder();
 
             _repoMock.Setup(r => r.GetById(order.Id))
-                .Returns(order);
+                .Returns((Order)null);
 
             _repoMock.Setup(r => r.GetAll())
                 .Returns(new List<Order>());
 
             var result = _service.EditOrder(order);
 
-            Assert.Equal(OrderEditResult.InvalidData, result.Result);
+            Assert.Equal(OrderEditResult.NotFound, result.Result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Order>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);

@@ -24,18 +24,18 @@ namespace AccountingSystem.Tests.ValidationTests
                 IssueDate = new DateTime(2026, 1, 1),
                 DueDate = new DateTime(2026, 1, 15),
 
-                Customer = new Customer { Id = 1 },
+                CustomerId = 1,   
 
                 Items = new List<InvoiceItem>
-        {
-            new InvoiceItem
-            {
-                Product = new Product { Id = 1 },
-                Quantity = 2,
-                BaseUnitPrice = 100m,
-                DiscountPercent = 0
-            }
-        }
+                {
+                    new InvoiceItem
+                    {
+                        ProductId = 1,
+                        Quantity = 2,
+                        BaseUnitPrice = 100m,
+                        DiscountPercent = 0
+                    }
+                }
             };
         }
 

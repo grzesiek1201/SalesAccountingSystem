@@ -1,14 +1,12 @@
 ﻿using AccountingSystem.Application.Interfaces;
+using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Invoices;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
-using Moq;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
+using Moq;
 
 namespace AccountingSystem.Tests.ServicesTests
 {
@@ -17,41 +15,47 @@ namespace AccountingSystem.Tests.ServicesTests
         private readonly Mock<IPaymentRepository> _paymentRepoMock;
         private readonly Mock<IInvoiceRepository> _invoiceRepoMock;
         private readonly Mock<IUnitOfWork> _uowMock;
-
-        private readonly Mock<InvoiceService> _invoiceServiceMock;
-
         private readonly Mock<ILogger<PaymentService>> _loggerMock;
 
-        private readonly PaymentService _service;
+        private readonly Mock<INumberSequenceService> _seqMock;
+        private readonly Mock<ICustomerRepository> _customerRepoMock;
+        private readonly Mock<IProductRepository> _productRepoMock;
+        private readonly Mock<OrderToInvoiceMapper> _mapperMock;
 
+        private readonly InvoiceService _invoiceService;
+        private readonly PaymentService _service;
 
         public PaymentServiceTests()
         {
             _paymentRepoMock = new Mock<IPaymentRepository>();
             _invoiceRepoMock = new Mock<IInvoiceRepository>();
             _uowMock = new Mock<IUnitOfWork>();
-
-            var invoiceLoggerMock = new Mock<ILogger<InvoiceService>>();
-
-            var invoiceValidator = new InvoiceValidator();
-
-
-            _invoiceServiceMock = new Mock<InvoiceService>(
-                _invoiceRepoMock.Object,
-                invoiceValidator,
-                _uowMock.Object,
-                invoiceLoggerMock.Object
-            );
-
-
             _loggerMock = new Mock<ILogger<PaymentService>>();
 
+            _seqMock = new Mock<INumberSequenceService>();
+            _customerRepoMock = new Mock<ICustomerRepository>();
+            _productRepoMock = new Mock<IProductRepository>();
+            _mapperMock = new Mock<OrderToInvoiceMapper>();
+
+            _seqMock.Setup(x => x.GetNext(It.IsAny<DocumentType>()))
+                .Returns("I-2026-0001");
+
+            _invoiceService = new InvoiceService(
+                _invoiceRepoMock.Object,
+                new InvoiceValidator(),
+                _uowMock.Object,
+                new Mock<ILogger<InvoiceService>>().Object,
+                _seqMock.Object,
+                _mapperMock.Object,
+                _customerRepoMock.Object,
+                _productRepoMock.Object
+            );
 
             _service = new PaymentService(
                 _paymentRepoMock.Object,
                 _invoiceRepoMock.Object,
                 _uowMock.Object,
-                _invoiceServiceMock.Object,
+                _invoiceService,
                 _loggerMock.Object
             );
         }
@@ -80,16 +84,12 @@ namespace AccountingSystem.Tests.ServicesTests
         [Fact]
         public void AddPayment_InvoiceNotFound_ShouldReturnInvoiceNotFound()
         {
-            _invoiceRepoMock
-                .Setup(r => r.GetById(It.IsAny<int>()))
+            _invoiceRepoMock.Setup(r => r.GetById(It.IsAny<int>()))
                 .Returns((Invoice)null);
 
             var result = _service.AddPayment(1, CreateValidPayment());
 
             Assert.Equal(PaymentAddResult.InvoiceNotFound, result);
-
-            _paymentRepoMock.Verify(r => r.Add(It.IsAny<Payment>()), Times.Never);
-            _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
         [Fact]

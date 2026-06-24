@@ -3,7 +3,7 @@ using AccountingSystem.Domain.Enums;
 
 public interface INumberSequenceRepository
 {
-    NumberSequence? Get(DocumentType type, int year);
+    NumberSequence? GetNext(DocumentType type, int year);
     void Add(NumberSequence sequence);
     void Update(NumberSequence sequence);
 }

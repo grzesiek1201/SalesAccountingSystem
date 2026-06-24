@@ -8,7 +8,7 @@ using AccountingSystem.Application.Validation.Invoices;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
-
+ 
 namespace AccountingSystem.Application.Services
 {
     public class InvoiceService
@@ -17,7 +17,7 @@ namespace AccountingSystem.Application.Services
         private readonly InvoiceValidator _validator;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<InvoiceService> _logger;
-        private readonly NumberSequenceService _numberSequenceService;
+        private readonly INumberSequenceService _numberSequenceService;
         private readonly OrderToInvoiceMapper _mapper;
         private readonly ICustomerRepository _customerRepository;
         private readonly IProductRepository _productRepository;
@@ -27,7 +27,7 @@ namespace AccountingSystem.Application.Services
             InvoiceValidator validator,
             IUnitOfWork unitOfWork,
             ILogger<InvoiceService> logger,
-            NumberSequenceService numberSequenceService,
+            INumberSequenceService numberSequenceService,
             OrderToInvoiceMapper mapper,
             ICustomerRepository customerRepository,
             IProductRepository productRepository)

@@ -15,7 +15,7 @@ namespace AccountingSystem.Application.Services
         private readonly QuotationValidator _validator;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<QuotationService> _logger;
-        private readonly NumberSequenceService _numberSequenceService;
+        private readonly INumberSequenceService _numberSequenceService;
         private readonly ICustomerRepository _customerRepository;
         private readonly IProductRepository _productRepository;
 
@@ -24,7 +24,7 @@ namespace AccountingSystem.Application.Services
             QuotationValidator validator,
             IUnitOfWork unitOfWork,
             ILogger<QuotationService> logger,
-            NumberSequenceService numberSequenceService,
+            INumberSequenceService numberSequenceService,
             ICustomerRepository customerRepository,
             IProductRepository productRepository)
         {
