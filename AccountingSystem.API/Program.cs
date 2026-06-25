@@ -50,12 +50,14 @@ builder.Services.AddScoped<InvoiceValidator>();
 builder.Services.AddScoped<PaymentValidator>();
 
 // SERVICES
-builder.Services.AddScoped<CustomerService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<QuotationService>();
 builder.Services.AddScoped<InvoiceService>();
 builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<INumberSequenceService, NumberSequenceService>();
+
 
 // REPOSITORIES + UOW
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
