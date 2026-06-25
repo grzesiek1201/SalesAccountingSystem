@@ -1,6 +1,6 @@
 @AccountingSystem.API_HostAddress = http://localhost:5032
 
-GET {{AccountingSystem.API_HostAddress}}/weatherforecast/
+GET {{AccountingSystem.API_HostAddress}}/salesaccountingsystem/
 Accept: application/json
 
 ###
