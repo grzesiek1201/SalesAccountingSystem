@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using AccountingSystem.Application.Repositories;
+﻿using AccountingSystem.Application.Repositories;
 using AccountingSystem.Domain.Entities;
 
 namespace AccountingSystem.Application.Validation.Payments
