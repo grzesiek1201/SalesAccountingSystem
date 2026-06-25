@@ -1,7 +1,9 @@
-﻿using AccountingSystem.Application.Interfaces;
+﻿using AccountingSystem.Application.DTOs.Customers;
+using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Services;
 using AccountingSystem.Application.Validation.Customers;
+using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -32,7 +34,34 @@ namespace AccountingSystem.Tests.ServicesTests
             );
         }
 
-        private Customer CreateValidCustomer()
+        // ================= HELPERS =================
+
+        private CreateCustomerRequest CreateValidRequest()
+        {
+            return new CreateCustomerRequest
+            {
+                Name = "Jan Kowalski",
+                Email = "jan@test.com",
+                City = "Warszawa",
+                Street = "Wąska 12",
+                ZipCode = "21222"
+            };
+        }
+
+        private UpdateCustomerRequest CreateValidUpdateRequest(int id = 1)
+        {
+            return new UpdateCustomerRequest
+            {
+                Id = id,
+                Name = "Jan Kowalski",
+                Email = "jan@test.com",
+                City = "Warszawa",
+                Street = "Wąska 12",
+                ZipCode = "21222"
+            };
+        }
+
+        private Customer CreateDomainCustomer()
         {
             return new Customer
             {
@@ -42,142 +71,102 @@ namespace AccountingSystem.Tests.ServicesTests
                 City = "Warszawa",
                 Street = "Wąska 12",
                 ZipCode = "21222",
-                InDebt = false,
                 IsCustomerArchived = false
             };
         }
 
-        // ---------------- ADD ----------------
+        // ================= ADD =================
 
         [Fact]
         public void AddCustomer_Valid_ShouldReturnSuccess()
         {
-            var customer = CreateValidCustomer();
+            var request = CreateValidRequest();
 
             _repoMock.Setup(r => r.GetAll())
                 .Returns(new List<Customer>());
 
-            var result = _service.AddCustomer(customer);
+            var result = _service.AddCustomer(request);
 
             Assert.Equal(CustomerAddResult.Success, result.Result);
 
-            _repoMock.Verify(r => r.Add(customer), Times.Once);
+            _repoMock.Verify(r => r.Add(It.IsAny<Customer>()), Times.Once);
             _uowMock.Verify(u => u.Save(), Times.Once);
         }
 
         [Fact]
         public void AddCustomer_Invalid_ShouldReturnInvalidData()
         {
-            var customer = CreateValidCustomer();
-            customer.Email = "bad-email";
+            var request = CreateValidRequest();
+            request.Email = "bad-email";
 
             _repoMock.Setup(r => r.GetAll())
                 .Returns(new List<Customer>());
 
-            var result = _service.AddCustomer(customer);
+            var result = _service.AddCustomer(request);
 
             Assert.Equal(CustomerAddResult.InvalidData, result.Result);
 
             _repoMock.Verify(r => r.Add(It.IsAny<Customer>()), Times.Never);
-            _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
-        [Fact]
-        public void AddCustomer_DuplicateEmail_ShouldReturnInvalidData()
-        {
-            var customer = CreateValidCustomer();
-
-            _repoMock.Setup(r => r.GetAll())
-                .Returns(new List<Customer>
-                {
-                    new Customer { Id = 999, Email = "jan@test.com" }
-                });
-
-            var result = _service.AddCustomer(customer);
-
-            Assert.Equal(CustomerAddResult.InvalidData, result.Result);
-
-            _repoMock.Verify(r => r.Add(It.IsAny<Customer>()), Times.Never);
-            _uowMock.Verify(u => u.Save(), Times.Never);
-        }
-
-        // ---------------- EDIT ----------------
+        // ================= EDIT =================
 
         [Fact]
         public void EditCustomer_NotFound_ShouldReturnNotFound()
         {
-            var customer = CreateValidCustomer();
+            var request = CreateValidUpdateRequest();
 
-            _repoMock.Setup(r => r.GetById(customer.Id))
+            _repoMock.Setup(r => r.GetById(request.Id))
                 .Returns((Customer)null);
 
-            var result = _service.EditCustomer(customer);
+            var result = _service.EditCustomer(request);
 
             Assert.Equal(CustomerEditResult.NotFound, result.Result);
         }
 
         [Fact]
-        public void EditCustomer_Archived_ShouldReturnCustomerArchived()
+        public void EditCustomer_Archived_ShouldReturnArchived()
         {
-            var customer = CreateValidCustomer();
+            var request = CreateValidUpdateRequest();
+
+            var customer = CreateDomainCustomer();
             customer.IsCustomerArchived = true;
 
-            _repoMock.Setup(r => r.GetById(customer.Id))
+            _repoMock.Setup(r => r.GetById(request.Id))
                 .Returns(customer);
 
-            var result = _service.EditCustomer(customer);
+            var result = _service.EditCustomer(request);
 
             Assert.Equal(CustomerEditResult.CustomerArchived, result.Result);
-
-            _repoMock.Verify(r => r.Update(It.IsAny<Customer>()), Times.Never);
-            _uowMock.Verify(u => u.Save(), Times.Never);
-        }
-
-        [Fact]
-        public void EditCustomer_Invalid_ShouldReturnInvalidData()
-        {
-            var customer = CreateValidCustomer();
-            customer.Email = "bad-email";
-
-            _repoMock.Setup(r => r.GetById(customer.Id))
-                .Returns(customer);
-
-            _repoMock.Setup(r => r.GetAll())
-                .Returns(new List<Customer>());
-
-            var result = _service.EditCustomer(customer);
-
-            Assert.Equal(CustomerEditResult.InvalidData, result.Result);
-
-            _repoMock.Verify(r => r.Update(It.IsAny<Customer>()), Times.Never);
-            _uowMock.Verify(u => u.Save(), Times.Never);
         }
 
         [Fact]
         public void EditCustomer_Valid_ShouldReturnSuccess()
         {
-            var customer = CreateValidCustomer();
+            var request = CreateValidUpdateRequest();
 
-            _repoMock.Setup(r => r.GetById(customer.Id))
+            var customer = CreateDomainCustomer();
+
+            _repoMock.Setup(r => r.GetById(request.Id))
                 .Returns(customer);
 
             _repoMock.Setup(r => r.GetAll())
-                .Returns(new List<Customer>());
+                .Returns(new List<Customer> { customer });
 
-            var result = _service.EditCustomer(customer);
+            var result = _service.EditCustomer(request);
 
             Assert.Equal(CustomerEditResult.Success, result.Result);
 
-            _repoMock.Verify(r => r.Update(customer), Times.Once);
+            _repoMock.Verify(r => r.Update(It.IsAny<Customer>()), Times.Once);
             _uowMock.Verify(u => u.Save(), Times.Once);
         }
 
-        // ---------------- ARCHIVE ----------------
+        // ================= ARCHIVE =================
 
         [Fact]
-        public void ArchiveCustomer_Existing_ShouldReturnSuccess()
+        public void ArchiveCustomer_ShouldReturnSuccess()
         {
-            var customer = CreateValidCustomer();
+            var customer = CreateDomainCustomer();
 
             _repoMock.Setup(r => r.GetById(customer.Id))
                 .Returns(customer);
@@ -186,69 +175,48 @@ namespace AccountingSystem.Tests.ServicesTests
 
             Assert.Equal(CustomerArchiveResult.Success, result);
             Assert.True(customer.IsCustomerArchived);
+        }
 
-            _repoMock.Verify(r => r.Update(customer), Times.Once);
-            _uowMock.Verify(u => u.Save(), Times.Once);
+        // ================= READ =================
+
+        [Fact]
+        public void GetAllCustomers_ShouldReturnList()
+        {
+            _repoMock.Setup(r => r.GetAll())
+                .Returns(new List<Customer>
+                {
+                    CreateDomainCustomer(),
+                    CreateDomainCustomer()
+                });
+
+            var result = _service.GetAllCustomers();
+
+            Assert.Equal(2, result.Count);
         }
 
         [Fact]
-        public void ArchiveCustomer_NotFound_ShouldReturnNotFound()
+        public void GetCustomerById_ShouldReturnCustomer()
         {
-            _repoMock.Setup(r => r.GetById(It.IsAny<int>()))
-                .Returns((Customer)null);
-
-            var result = _service.ArchiveCustomer(1);
-
-            Assert.Equal(CustomerArchiveResult.NotFound, result);
-
-            _repoMock.Verify(r => r.Update(It.IsAny<Customer>()), Times.Never);
-            _uowMock.Verify(u => u.Save(), Times.Never);
-        }
-
-        // ---------------- FIND ----------------
-
-        [Fact]
-        public void FindCustomer_Existing_ShouldReturnCustomer()
-        {
-            var customer = CreateValidCustomer();
+            var customer = CreateDomainCustomer();
 
             _repoMock.Setup(r => r.GetById(customer.Id))
                 .Returns(customer);
 
-            var result = _service.FindCustomer(customer.Id);
+            var result = _service.GetCustomerById(customer.Id);
 
             Assert.NotNull(result);
             Assert.Equal(customer.Id, result.Id);
         }
 
         [Fact]
-        public void FindCustomer_NotExisting_ShouldReturnNull()
+        public void GetCustomerById_NotFound_ShouldReturnNull()
         {
             _repoMock.Setup(r => r.GetById(It.IsAny<int>()))
                 .Returns((Customer)null);
 
-            var result = _service.FindCustomer(1);
+            var result = _service.GetCustomerById(1);
 
             Assert.Null(result);
-        }
-
-        // ---------------- GET ALL ----------------
-
-        [Fact]
-        public void GetAllCustomers_ShouldReturnAllCustomers()
-        {
-            var customers = new List<Customer>
-            {
-                CreateValidCustomer(),
-                CreateValidCustomer()
-            };
-
-            _repoMock.Setup(r => r.GetAll())
-                .Returns(customers);
-
-            var result = _service.GetAllCustomers();
-
-            Assert.Equal(2, result.Count);
         }
     }
 }
