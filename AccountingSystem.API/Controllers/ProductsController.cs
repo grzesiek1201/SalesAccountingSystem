@@ -1,4 +1,4 @@
-﻿using AccountingSystem.API.DTOs.Products;
+﻿using AccountingSystem.Application.DTOs.Products;
 using AccountingSystem.Application.Services;
 using AccountingSystem.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;

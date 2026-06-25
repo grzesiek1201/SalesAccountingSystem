@@ -1,4 +1,4 @@
-﻿using AccountingSystem.API.DTOs.Quotations;
+﻿using AccountingSystem.Application.DTOs.Quotations;
 using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Services;
 using AccountingSystem.Domain.Entities;

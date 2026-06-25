@@ -1,6 +1,7 @@
-﻿using AccountingSystem.API.DTOs.Customers;
-using AccountingSystem.Application.DTOs.Customers;
+﻿using AccountingSystem.Application.DTOs.Customers;
+using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Services;
+using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +11,13 @@ namespace AccountingSystem.API.Controllers;
 [Route("api/customers")]
 public class CustomersController : ControllerBase
 {
-    private readonly CustomerService _customerService;
     private readonly ILogger<CustomersController> _logger;
 
-    public CustomersController(CustomerService customerService,
-                               ILogger<CustomersController> logger)
+    private readonly ICustomerService _customerService;
+
+    public CustomersController(
+        ICustomerService customerService,
+        ILogger<CustomersController> logger)
     {
         _customerService = customerService;
         _logger = logger;
@@ -43,7 +46,7 @@ public class CustomersController : ControllerBase
     {
         _logger.LogInformation("GET /api/customers/{Id}", id);
 
-        var customer = _customerService.FindCustomer(id);
+        var customer = _customerService.GetCustomerById(id);
 
         if (customer == null)
         {
@@ -76,7 +79,7 @@ public class CustomersController : ControllerBase
             ZipCode = request.ZipCode
         };
 
-        var result = _customerService.AddCustomer(customer);
+        var result = _customerService.AddCustomer(request);
 
         if (!result.IsSuccess)
         {
