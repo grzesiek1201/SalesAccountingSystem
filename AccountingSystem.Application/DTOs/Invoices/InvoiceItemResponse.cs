@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AccountingSystem.Application.DTOs.Invoices
+﻿namespace AccountingSystem.Application.DTOs.Invoices
 {
     public class InvoiceItemResponse
     {

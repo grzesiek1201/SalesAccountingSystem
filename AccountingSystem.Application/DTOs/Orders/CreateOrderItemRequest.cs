@@ -1,6 +1,6 @@
-﻿namespace AccountingSystem.API.DTOs.Quotations
+﻿namespace AccountingSystem.Application.DTOs.Orders
 {
-    public class CreateQuotationItemRequest
+    public class CreateOrderItemRequest
     {
         public int ProductId { get; set; }
         public int Quantity { get; set; }

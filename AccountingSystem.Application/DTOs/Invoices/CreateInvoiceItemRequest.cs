@@ -1,8 +1,7 @@
-﻿namespace AccountingSystem.API.DTOs.Quotations
+﻿namespace AccountingSystem.Application.DTOs.Invoices
 {
-    public class UpdateQuotationItemRequest
+    public class CreateInvoiceItemRequest
     {
-        public int? Id { get; set; } 
         public int ProductId { get; set; }
         public int Quantity { get; set; }
         public decimal DiscountPercent { get; set; }

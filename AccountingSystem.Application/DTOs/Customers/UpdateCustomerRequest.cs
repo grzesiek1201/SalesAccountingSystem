@@ -1,7 +1,8 @@
-﻿namespace AccountingSystem.API.DTOs.Customers
+﻿namespace AccountingSystem.Application.DTOs.Customers
 {
     public class UpdateCustomerRequest
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string Street { get; set; }

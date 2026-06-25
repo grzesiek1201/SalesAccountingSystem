@@ -1,4 +1,4 @@
-﻿namespace AccountingSystem.API.DTOs.Invoices
+﻿namespace AccountingSystem.Application.DTOs.Invoices
 {
     public class UpdateInvoiceRequest
     {

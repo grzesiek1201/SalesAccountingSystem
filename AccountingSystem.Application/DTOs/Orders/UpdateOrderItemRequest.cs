@@ -1,6 +1,6 @@
-﻿namespace AccountingSystem.API.DTOs.Invoices
+﻿namespace AccountingSystem.Application.DTOs.Orders
 {
-    public class UpdateInvoiceItemRequest
+    public class UpdateOrderItemRequest
     {
         public int? Id { get; set; }
         public int ProductId { get; set; }
@@ -9,3 +9,4 @@
         public int Position { get; set; }
     }
 }
+

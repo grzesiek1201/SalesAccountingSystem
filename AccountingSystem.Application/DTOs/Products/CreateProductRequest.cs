@@ -1,4 +1,4 @@
-﻿namespace AccountingSystem.API.DTOs.Products
+﻿namespace AccountingSystem.Application.DTOs.Products
 {
     public class CreateProductRequest
     {

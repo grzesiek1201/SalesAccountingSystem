@@ -1,4 +1,4 @@
-﻿namespace AccountingSystem.API.DTOs.Customers;
+﻿namespace AccountingSystem.Application.DTOs.Customers;
 
 public class CreateCustomerRequest
 {

@@ -1,4 +1,4 @@
-﻿namespace AccountingSystem.API.DTOs.Orders
+﻿namespace AccountingSystem.Application.DTOs.Orders
 {
     public class CreateOrderRequest
     {

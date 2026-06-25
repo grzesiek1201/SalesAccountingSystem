@@ -1,12 +1,10 @@
-﻿namespace AccountingSystem.API.DTOs.Orders
+﻿namespace AccountingSystem.Application.DTOs.Quotations
 {
-    public class UpdateOrderItemRequest
+    public class CreateQuotationItemRequest
     {
-        public int? Id { get; set; }
         public int ProductId { get; set; }
         public int Quantity { get; set; }
         public decimal DiscountPercent { get; set; }
         public int Position { get; set; }
     }
 }
-

@@ -1,6 +1,4 @@
-﻿using AccountingSystem.API.DTOs.Orders;
-
-namespace AccountingSystem.API.DTOs.Invoices
+﻿namespace AccountingSystem.Application.DTOs.Invoices
 {
     public class CreateInvoiceRequest
     {

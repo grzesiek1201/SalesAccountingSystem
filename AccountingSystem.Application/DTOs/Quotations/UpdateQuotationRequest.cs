@@ -1,4 +1,4 @@
-﻿namespace AccountingSystem.API.DTOs.Quotations
+﻿namespace AccountingSystem.Application.DTOs.Quotations
 {
     public class UpdateQuotationRequest
     {

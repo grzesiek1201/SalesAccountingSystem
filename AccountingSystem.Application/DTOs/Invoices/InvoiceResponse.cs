@@ -1,8 +1,4 @@
 ﻿using AccountingSystem.Application.DTOs.Customers;
-using AccountingSystem.Application.DTOs.Invoices;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AccountingSystem.Application.DTOs.Invoices
 {

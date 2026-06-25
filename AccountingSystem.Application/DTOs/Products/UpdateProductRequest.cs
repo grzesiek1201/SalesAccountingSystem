@@ -1,6 +1,4 @@
-﻿using AccountingSystem.Domain.Entities;
-
-namespace AccountingSystem.API.DTOs.Products
+﻿namespace AccountingSystem.Application.DTOs.Products
 {
     public class UpdateProductRequest
     {
