@@ -210,7 +210,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.ArchiveProduct(product.Id);
 
-            Assert.Equal(ArchiveProductResult.Success, result);
+            Assert.Equal(ProductArchiveResult.Success, result);
 
             _repoMock.Verify(r => r.Update(product), Times.Once);
             _uowMock.Verify(u => u.Save(), Times.Once);
@@ -224,7 +224,7 @@ namespace AccountingSystem.Tests.ServicesTests
 
             var result = _service.ArchiveProduct(1);
 
-            Assert.Equal(ArchiveProductResult.NotFound, result);
+            Assert.Equal(ProductArchiveResult.NotFound, result);
 
             _repoMock.Verify(r => r.Update(It.IsAny<Product>()), Times.Never);
             _uowMock.Verify(u => u.Save(), Times.Never);

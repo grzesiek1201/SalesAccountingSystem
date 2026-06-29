@@ -1,8 +1,8 @@
 ﻿using AccountingSystem.Application.DTOs.Customers;
+using AccountingSystem.Application.DTOs.Products;
 using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Services;
 using AccountingSystem.Domain.Entities;
-using AccountingSystem.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccountingSystem.API.Controllers;
@@ -11,9 +11,8 @@ namespace AccountingSystem.API.Controllers;
 [Route("api/customers")]
 public class CustomersController : ControllerBase
 {
-    private readonly ILogger<CustomersController> _logger;
-
     private readonly ICustomerService _customerService;
+    private readonly ILogger<CustomersController> _logger;
 
     public CustomersController(
         ICustomerService customerService,
@@ -29,6 +28,8 @@ public class CustomersController : ControllerBase
         _logger.LogInformation("GET /api/customers");
 
         var customers = _customerService.GetAllCustomers();
+
+        _logger.LogInformation("Customers count: {Count}", customers.Count);
 
         return Ok(customers.Select(c => new CustomerResponse
         {
@@ -99,4 +100,43 @@ public class CustomersController : ControllerBase
             ZipCode = customer.ZipCode
         });
     }
+
+    [HttpPut("{id}")]
+    public IActionResult Update(int id, UpdateCustomerRequest request)
+    {
+        _logger.LogInformation("PUT customer {Id}", id);
+
+        var customer = new Customer
+        {
+            Id = id,
+            Name = request.Name,
+            Email = request.Email,
+            City = request.City,
+            Street = request.Street,
+            ZipCode = request.ZipCode
+        };
+
+        var result = _customerService.EditCustomer(request);
+
+        if (!result.IsSuccess)
+        {
+            _logger.LogWarning("Customer update failed {Id}", id);
+            return BadRequest(result.Errors);
+        }
+
+         _logger.LogInformation("Customer updated: {Id}", id);
+
+        return Ok(new CustomerResponse
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Email = customer.Email,
+            City = customer.City,
+            Street = customer.Street,
+            ZipCode = customer.ZipCode
+        });
+    }
 }
+
+     
+    

@@ -1,11 +1,4 @@
 using AccountingSystem.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection.Emit;
-using System.Text;
-using System.Xml.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AccountingSystem.Application.Validation.Products
 {
@@ -36,27 +29,6 @@ namespace AccountingSystem.Application.Validation.Products
             if (product.Category == null)
             {
                 result.Errors.Add(ProductValidationError.EmptyCategory);
-            }
-            else
-            {
-                if (string.IsNullOrWhiteSpace(product.Category.Name))
-                {
-                    result.Errors.Add(ProductValidationError.EmptyCategory);
-                }
-                else
-                {
-                    if (product.Category.Name.Length > 64)
-                        result.Errors.Add(ProductValidationError.CategoryTooLong);
-
-                    if (products.Exists(x =>
-                        x.Category != null &&
-                        product.Category != null &&
-                        x.Category.Name == product.Category.Name &&
-                        x.Id != product.Id))
-                    {
-                        result.Errors.Add(ProductValidationError.DuplicateCategory);
-                    }
-                }
             }
 
             return result;

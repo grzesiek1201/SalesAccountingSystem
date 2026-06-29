@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AccountingSystem.Application.Services
 {
-    public class QuotationService
+    public class QuotationService : IQuotationService
     {
         private readonly IQuotationRepository _quotationRepository;
         private readonly QuotationValidator _validator;

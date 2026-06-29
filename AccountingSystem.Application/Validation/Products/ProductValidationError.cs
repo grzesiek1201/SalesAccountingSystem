@@ -5,7 +5,5 @@ public enum ProductValidationError
     DuplicateName,
     InvalidPrice,
     EmptyPrice,
-    EmptyCategory,
-    CategoryTooLong,
-    DuplicateCategory,
+    EmptyCategory
 }

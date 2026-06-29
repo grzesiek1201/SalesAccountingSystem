@@ -30,5 +30,8 @@ namespace AccountingSystem.Infrastructure.Repositories
 
         public void Add(ProductCategory productCategory)
             => _context.ProductCategories.Add(productCategory);
+
+        public void Update(ProductCategory productCategory)
+            => _context.ProductCategories.Update(productCategory);
     }
 }

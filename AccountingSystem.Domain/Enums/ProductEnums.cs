@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace AccountingSystem.Domain.Enums
 {
     public enum ProductAddResult
@@ -18,7 +14,7 @@ namespace AccountingSystem.Domain.Enums
         ProductArchived
     }
 
-    public enum ArchiveProductResult
+    public enum ProductArchiveResult
     {
         Success,
         NotFound,

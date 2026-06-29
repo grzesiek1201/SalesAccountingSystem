@@ -1,6 +1,5 @@
 ﻿using AccountingSystem.Application.DTOs.Customers;
 using AccountingSystem.Domain.Enums;
-using AccountingSystem.Domain.Entities;
 
 namespace AccountingSystem.Application.Interfaces
 {

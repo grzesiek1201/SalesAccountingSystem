@@ -1,4 +1,5 @@
 ﻿using AccountingSystem.Application.DTOs.Products;
+using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Services;
 using AccountingSystem.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -9,11 +10,12 @@ namespace AccountingSystem.API.Controllers;
 [Route("api/products")]
 public class ProductsController : ControllerBase
 {
-    private readonly ProductService _productService;
+    private readonly IProductService _productService;
     private readonly ILogger<ProductsController> _logger;
 
-    public ProductsController(ProductService productService,
-                              ILogger<ProductsController> logger)
+    public ProductsController(
+        IProductService productService,
+        ILogger<ProductsController> logger)
     {
         _productService = productService;
         _logger = logger;
@@ -42,7 +44,7 @@ public class ProductsController : ControllerBase
     {
         _logger.LogInformation("GET /api/products/{Id}", id);
 
-        var product = _productService.FindProduct(id);
+        var product = _productService.GetProductById(id);
 
         if (product == null)
         {
@@ -71,7 +73,7 @@ public class ProductsController : ControllerBase
             CategoryId = request.CategoryId
         };
 
-        var result = _productService.AddProduct(product);
+        var result = _productService.AddProduct(request);
 
         if (!result.IsSuccess)
         {
@@ -103,7 +105,7 @@ public class ProductsController : ControllerBase
             CategoryId = request.CategoryId
         };
 
-        var result = _productService.EditProduct(product);
+        var result = _productService.EditProduct(request);
 
         if (!result.IsSuccess)
         {

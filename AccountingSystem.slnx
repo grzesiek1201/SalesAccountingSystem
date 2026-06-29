@@ -4,7 +4,4 @@
   <Project Path="AccountingSystem.Domain/AccountingSystem.Domain.csproj" />
   <Project Path="AccountingSystem.Infrastructure/AccountingSystem.Infrastructure.csproj" />
   <Project Path="AccountingSystem.Tests/AccountingSystem.Tests.csproj" />
-  <Project Path="AccountingSystem.UI/AccountingSystem.UI.csproj">
-    <Build Solution="Debug|*" Project="false" />
-  </Project>
 </Solution>

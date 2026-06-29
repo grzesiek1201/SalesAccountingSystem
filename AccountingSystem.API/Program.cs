@@ -51,7 +51,7 @@ builder.Services.AddScoped<PaymentValidator>();
 
 // SERVICES
 builder.Services.AddScoped<ICustomerService, CustomerService>();
-builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<QuotationService>();
 builder.Services.AddScoped<InvoiceService>();
