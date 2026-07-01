@@ -1,10 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using AccountingSystem.Application.DTOs.Quotations;
+using AccountingSystem.Domain.Enums;
 
 namespace AccountingSystem.Application.Interfaces
 {
-    internal interface IQuotationService
+    public interface IQuotationService
     {
+        QuotationAddResponse AddQuotation(CreateQuotationRequest request);
+        QuotationEditResponse EditQuotation(UpdateQuotationRequest request);
+        List<QuotationResponse> GetAllQuotations();
+        QuotationStatusResponse ChangeQuotationStatus(int id, StatusQuotationRequest request);
+        QuotationArchiveResult ArchiveQuotation(int id);
     }
 }

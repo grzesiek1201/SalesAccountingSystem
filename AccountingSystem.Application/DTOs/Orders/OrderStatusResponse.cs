@@ -2,12 +2,12 @@
 
 namespace AccountingSystem.Application.DTOs.Orders
 {
-    public class OrderEditResponse
+    public class OrderStatusResponse
     {
-        public OrderEditResult Result { get; set; }
+        public OrderStatusResult Result { get; set; }
 
         public List<OrderValidationError> Errors { get; set; } = new List<OrderValidationError>();
 
-        public bool IsSuccess => Result == OrderEditResult.Success;
+        public bool IsSuccess => Result == OrderStatusResult.Success;
     }
 }

@@ -1,6 +1,6 @@
 using AccountingSystem.Domain.Enums;
 
-namespace AccountingSystem.Application.DTOs.Order
+namespace AccountingSystem.Application.DTOs.Orders
 {
     public class OrderAddResponse
     {
