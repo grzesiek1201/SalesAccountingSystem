@@ -72,7 +72,7 @@ public class QuotationsController : ControllerBase
             }).ToList()
         };
 
-        var result = _quotationService.AddQuotation(quotation);
+        var result = _quotationService.AddQuotation(request);
 
         if (!result.IsSuccess)
         {
@@ -103,7 +103,7 @@ public class QuotationsController : ControllerBase
             }).ToList()
         };
 
-        var result = _quotationService.EditQuotation(quotation);
+        var result = _quotationService.EditQuotation(request);
 
         if (!result.IsSuccess)
         {

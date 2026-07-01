@@ -1,25 +1,28 @@
 using AccountingSystem.Application.DTOs.Invoices;
+using AccountingSystem.Application.DTOs.Orders;
 using AccountingSystem.Application.Helpers.Snapshots;
 using AccountingSystem.Application.Interfaces;
+using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Mappers;
 using AccountingSystem.Application.Repositories;
 using AccountingSystem.Application.Validation.Invoices;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
- 
+
 namespace AccountingSystem.Application.Services
 {
-    public class InvoiceService
+    public class InvoiceService : IInvoiceService
     {
         private readonly IInvoiceRepository _invoiceRepository;
         private readonly InvoiceValidator _validator;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<InvoiceService> _logger;
         private readonly INumberSequenceService _numberSequenceService;
-        private readonly OrderToInvoiceMapper _mapper;
+        private readonly OrderToInvoiceMapper _mapperConvertion;
         private readonly ICustomerRepository _customerRepository;
         private readonly IProductRepository _productRepository;
+        private readonly InvoiceResponseMapper _mapper;
 
         public InvoiceService(
             IInvoiceRepository invoiceRepository,
@@ -27,31 +30,33 @@ namespace AccountingSystem.Application.Services
             IUnitOfWork unitOfWork,
             ILogger<InvoiceService> logger,
             INumberSequenceService numberSequenceService,
-            OrderToInvoiceMapper mapper,
+            OrderToInvoiceMapper mapperConvertion,
             ICustomerRepository customerRepository,
-            IProductRepository productRepository)
+            IProductRepository productRepository,
+            InvoiceResponseMapper mapper)
         {
             _invoiceRepository = invoiceRepository;
             _validator = validator;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _numberSequenceService = numberSequenceService;
-            _mapper = mapper;
+            _mapperConvertion = mapperConvertion;
             _customerRepository = customerRepository;
             _productRepository = productRepository;
+            _mapper = mapper;
         }
 
         // ================= ADD =================
 
-        public InvoiceAddResponse AddInvoice(Invoice invoice)
+        public InvoiceAddResponse AddInvoice(CreateOrderRequest request)
         {
-            _logger.LogInformation("AddInvoice start. CustomerId: {CustomerId}", invoice.CustomerId);
+            _logger.LogInformation("AddInvoice start. CustomerId: {CustomerId}", request.CustomerId);
 
-            var customer = _customerRepository.GetById(invoice.CustomerId);
+            var customer = _customerRepository.GetById(request.CustomerId);
             if (customer == null)
                 return new InvoiceAddResponse { Result = InvoiceAddResult.InvalidData };
 
-            var productIds = invoice.Items?
+            var productIds = request.Items?
                 .Select(i => i.ProductId)
                 .ToList() ?? new List<int>();
 
@@ -59,13 +64,27 @@ namespace AccountingSystem.Application.Services
                 .GetByIds(productIds)
                 .ToDictionary(p => p.Id);
 
-            invoice.InvoiceNumber =
-                _numberSequenceService.GetNext(DocumentType.Invoice);
+            var invoice = new Invoice
+            {
+                CustomerId = request.CustomerId,
+                Status = InvoiceStatus.Draft,
+                DateCreated = DateTime.UtcNow,
+                InvoiceNumber = _numberSequenceService.GetNext(DocumentType.Invoice)
+            };
 
             invoice.ApplyCustomerSnapshot(customer);
 
+            var domainItems = request.Items?
+                .Select(x => new InvoiceItem
+                {
+                    ProductId = x.ProductId,
+                    Quantity = x.Quantity,
+                    DiscountPercent = x.DiscountPercent
+                })
+                .ToList() ?? new List<InvoiceItem>();
+
             invoice.Items = ItemSnapshotHelper.SnapshotInvoiceItems(
-                invoice.Items,
+                domainItems,
                 products);
 
             var validation = _validator.Validate(
@@ -105,7 +124,7 @@ namespace AccountingSystem.Application.Services
                 return new InvoiceAddResponse { Result = InvoiceAddResult.InvalidData };
             }
 
-            var invoice = _mapper.Map(order);
+            var invoice = _mapperConvertion.Map(order);
 
             if (order == null)
             {
