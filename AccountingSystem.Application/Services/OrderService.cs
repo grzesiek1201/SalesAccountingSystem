@@ -1,4 +1,4 @@
-using AccountingSystem.Application.DTOs.Order;
+using AccountingSystem.Application.DTOs.Orders;
 using AccountingSystem.Application.Helpers.Snapshots;
 using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Repositories;
@@ -6,10 +6,11 @@ using AccountingSystem.Application.Validation.Orders;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
+using AccountingSystem.Application.Mappers;
 
 namespace AccountingSystem.Application.Services
 {
-    public class OrderService
+    public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
         private readonly OrderValidator _validator;
@@ -18,6 +19,7 @@ namespace AccountingSystem.Application.Services
         private readonly INumberSequenceService _numberSequenceService;
         private readonly ICustomerRepository _customerRepository;
         private readonly IProductRepository _productRepository;
+        private readonly OrderResponseMapper _mapper;
 
         public OrderService(
             IOrderRepository orderRepository,
@@ -26,7 +28,8 @@ namespace AccountingSystem.Application.Services
             ILogger<OrderService> logger,
             INumberSequenceService numberSequenceService,
             ICustomerRepository customerRepository,
-            IProductRepository productRepository)
+            IProductRepository productRepository,
+            OrderResponseMapper mapper)
         {
             _orderRepository = orderRepository;
             _validator = validator;
@@ -35,19 +38,20 @@ namespace AccountingSystem.Application.Services
             _numberSequenceService = numberSequenceService;
             _customerRepository = customerRepository;
             _productRepository = productRepository;
+            _mapper = mapper;
         }
 
         // ================= ADD =================
 
-        public OrderAddResponse AddOrder(Order order)
+        public OrderAddResponse AddOrder(CreateOrderRequest request)
         {
-            _logger.LogInformation("AddOrder start. CustomerId: {CustomerId}", order.CustomerId);
+            _logger.LogInformation("AddOrder start. CustomerId: {CustomerId}", request.CustomerId);
 
-            var customer = _customerRepository.GetById(order.CustomerId);
+            var customer = _customerRepository.GetById(request.CustomerId);
             if (customer == null)
                 return new OrderAddResponse { Result = OrderAddResult.InvalidData };
 
-            var productIds = order.Items?
+            var productIds = request.Items?
                 .Select(i => i.ProductId)
                 .ToList() ?? new List<int>();
 
@@ -55,13 +59,27 @@ namespace AccountingSystem.Application.Services
                 .GetByIds(productIds)
                 .ToDictionary(p => p.Id);
 
-            order.OrderNumber =
-                _numberSequenceService.GetNext(DocumentType.Order);
+            var order = new Order
+            {
+                CustomerId = request.CustomerId,
+                Status = OrderStatus.Draft,
+                DateCreated = DateTime.UtcNow,
+                OrderNumber = _numberSequenceService.GetNext(DocumentType.Order)
+            };
 
             order.ApplyCustomerSnapshot(customer);
 
+            var domainItems = request.Items?
+                .Select(x => new OrderItem
+                {
+                    ProductId = x.ProductId,
+                    Quantity = x.Quantity,
+                    DiscountPercent = x.DiscountPercent
+                })
+                .ToList() ?? new List<OrderItem>();
+
             order.Items = ItemSnapshotHelper.SnapshotOrderItems(
-                order.Items,
+                domainItems,
                 products);
 
             var validation = _validator.Validate(
@@ -92,11 +110,11 @@ namespace AccountingSystem.Application.Services
 
         // ================= EDIT =================
 
-        public OrderEditResponse EditOrder(Order input)
+        public OrderEditResponse EditOrder(UpdateOrderRequest request)
         {
-            _logger.LogInformation("EditOrder start. Id: {Id}", input.Id);
+            _logger.LogInformation("EditOrder start. Id: {Id}", request.Id);
 
-            var existing = _orderRepository.GetById(input.Id);
+            var existing = _orderRepository.GetById(request.Id);
 
             if (existing == null)
                 return new OrderEditResponse { Result = OrderEditResult.NotFound };
@@ -104,36 +122,39 @@ namespace AccountingSystem.Application.Services
             if (existing.IsOrderArchived)
                 return new OrderEditResponse { Result = OrderEditResult.OrderArchived };
 
-            var productIds = input.Items?.Select(i => i.ProductId).ToList() ?? new List<int>();
-
-            var products = _productRepository
-                .GetByIds(productIds)
-                .ToDictionary(p => p.Id);
-
-            if (input.Items != null && input.Items.Any())
+            if (request.Items != null && request.Items.Any())
             {
-                var itemProductIds = input.Items.Select(i => i.ProductId).ToList();
+                var domainItems = request.Items
+                    .Select(x => new OrderItem
+                    {
+                        ProductId = x.ProductId,
+                        Quantity = x.Quantity,
+                        DiscountPercent = x.DiscountPercent
+                    })
+                    .ToList();
 
-                var productDict = _productRepository
+                var productIds = domainItems?.Select(i => i.ProductId).ToList() ?? new List<int>();
+
+                var products = _productRepository
                     .GetByIds(productIds)
                     .ToDictionary(p => p.Id);
 
                 existing.Items = ItemSnapshotHelper.SnapshotOrderItems(
-                    input.Items,
+                    domainItems,
                     products);
             }
 
-            if (input.CustomerId != 0 && input.CustomerId != existing.CustomerId)
+            if (request.CustomerId != 0 && request.CustomerId != existing.CustomerId)
             {
-                var customer = _customerRepository.GetById(input.CustomerId);
+                var customer = _customerRepository.GetById(request.CustomerId);
                 if (customer == null)
                     return new OrderEditResponse { Result = OrderEditResult.InvalidData };
 
                 existing.ApplyCustomerSnapshot(customer);
             }
 
-            if (input.Status != default)
-                existing.Status = input.Status;
+            if (request.Status != default)
+                existing.Status = request.Status;
 
             var validation = _validator.Validate(
                 existing,
@@ -154,38 +175,46 @@ namespace AccountingSystem.Application.Services
 
         // ================= STATUS =================
 
-        public OrderStatusResult ChangeOrderStatus(int id, OrderStatus newStatus)
+        public OrderStatusResponse ChangeOrderStatus(int id, StatusOrderRequest request)
         {
-            _logger.LogInformation("ChangeStatus {Id} -> {Status}", id, newStatus);
+            _logger.LogInformation("ChangeStatus {Id} -> {Status}", id, request);
 
             var order = _orderRepository.GetById(id);
 
             if (order == null)
-                return OrderStatusResult.NotFound;
+                return new OrderStatusResponse { Result = OrderStatusResult.NotFound };
 
             if (order.IsOrderArchived)
-                return OrderStatusResult.InvalidOperation;
+                return new OrderStatusResponse { Result = OrderStatusResult.InvalidOperation };
 
-            order.Status = newStatus;
+            order.Status = request.Status;
 
             _orderRepository.Update(order);
             _unitOfWork.Save();
 
-            return OrderStatusResult.Success;
+            return new OrderStatusResponse { Result = OrderStatusResult.Success };
         }
 
         // ================= READ =================
 
-        public List<Order> GetAllOrders()
+        public List<OrderResponse> GetAllOrders()
         {
             _logger.LogInformation("GetAllOrders");
-            return _orderRepository.GetAll();
+
+            return _orderRepository.GetAll()
+                .Select(o => _mapper.Map(o))
+                .ToList();
         }
 
-        public Order? FindOrder(int id)
+        public OrderResponse? FindOrder(int id)
         {
             _logger.LogInformation("FindOrder: {OrderId}", id);
-            return _orderRepository.GetById(id);
+
+            var order = _orderRepository.GetById(id);
+            if (order == null)
+                return null;
+
+            return _mapper.Map(order);
         }
 
         // ================= ARCHIVE =================

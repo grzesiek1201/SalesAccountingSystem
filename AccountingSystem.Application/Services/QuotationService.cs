@@ -6,6 +6,7 @@ using AccountingSystem.Application.Validation.Quotations;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
+using AccountingSystem.Application.Mappers;
 
 namespace AccountingSystem.Application.Services
 {
@@ -18,6 +19,7 @@ namespace AccountingSystem.Application.Services
         private readonly INumberSequenceService _numberSequenceService;
         private readonly ICustomerRepository _customerRepository;
         private readonly IProductRepository _productRepository;
+        private readonly QuotationResponseMapper _mapper;
 
         public QuotationService(
             IQuotationRepository quotationRepository,
@@ -26,7 +28,8 @@ namespace AccountingSystem.Application.Services
             ILogger<QuotationService> logger,
             INumberSequenceService numberSequenceService,
             ICustomerRepository customerRepository,
-            IProductRepository productRepository)
+            IProductRepository productRepository,
+            QuotationResponseMapper mapper)
         {
             _quotationRepository = quotationRepository;
             _validator = validator;
@@ -35,19 +38,20 @@ namespace AccountingSystem.Application.Services
             _numberSequenceService = numberSequenceService;
             _customerRepository = customerRepository;
             _productRepository = productRepository;
+            _mapper = mapper;
         }
 
         // ================= ADD =================
 
-        public QuotationAddResponse AddQuotation(Quotation quotation)
+        public QuotationAddResponse AddQuotation(CreateQuotationRequest request)
         {
-            _logger.LogInformation("AddQuotation start. CustomerId: {CustomerId}", quotation.CustomerId);
+            _logger.LogInformation("AddQuotation start. CustomerId: {CustomerId}", request.CustomerId);
 
-            var customer = _customerRepository.GetById(quotation.CustomerId);
+            var customer = _customerRepository.GetById(request.CustomerId);
             if (customer == null)
                 return new QuotationAddResponse { Result = QuotationAddResult.InvalidData };
 
-            var productIds = quotation.Items?
+            var productIds = request.Items?
                 .Select(i => i.ProductId)
                 .ToList() ?? new List<int>();
 
@@ -55,13 +59,27 @@ namespace AccountingSystem.Application.Services
                 .GetByIds(productIds)
                 .ToDictionary(p => p.Id);
 
-            quotation.QuotationNumber =
-                _numberSequenceService.GetNext(DocumentType.Quotation);
+            var quotation = new Quotation
+            {
+                CustomerId = request.CustomerId,
+                Status = QuotationStatus.Draft,
+                DateCreated = DateTime.UtcNow,
+                QuotationNumber = _numberSequenceService.GetNext(DocumentType.Quotation)
+            };
 
             quotation.ApplyCustomerSnapshot(customer);
 
+            var domainItems = request.Items?
+                .Select(x => new QuotationItem
+                {
+                    ProductId = x.ProductId,
+                    Quantity = x.Quantity,
+                    DiscountPercent = x.DiscountPercent
+                })
+                .ToList() ?? new List<QuotationItem>();
+
             quotation.Items = ItemSnapshotHelper.SnapshotQuotationItems(
-                quotation.Items,
+                domainItems,
                 products);
 
             var validation = _validator.Validate(
@@ -92,11 +110,11 @@ namespace AccountingSystem.Application.Services
 
         // ================= EDIT =================
 
-        public QuotationEditResponse EditQuotation(Quotation input)
+        public QuotationEditResponse EditQuotation(UpdateQuotationRequest request)
         {
-            _logger.LogInformation("EditQuotation start. Id: {Id}", input.Id);
+            _logger.LogInformation("EditQuotation start. Id: {Id}", request.Id);
 
-            var existing = _quotationRepository.GetById(input.Id);
+            var existing = _quotationRepository.GetById(request.Id);
 
             if (existing == null)
                 return new QuotationEditResponse { Result = QuotationEditResult.NotFound };
@@ -104,36 +122,40 @@ namespace AccountingSystem.Application.Services
             if (existing.IsQuotationArchived)
                 return new QuotationEditResponse { Result = QuotationEditResult.QuotationArchived };
 
-            var productIds = input.Items?.Select(i => i.ProductId).ToList() ?? new List<int>();
-
-            var products = _productRepository
-                .GetByIds(productIds)
-                .ToDictionary(p => p.Id);
-
-            if (input.Items != null && input.Items.Any())
+            if (request.Items != null && request.Items.Any())
             {
-                var itemProductIds = input.Items.Select(i => i.ProductId).ToList();
+                var domainItems = request.Items
+                    .Select(x => new QuotationItem
+                    {
+                        ProductId = x.ProductId,
+                        Quantity = x.Quantity,
+                        DiscountPercent = x.DiscountPercent
+                    })
+                    .ToList();
 
-                var productDict = _productRepository
+                var productIds = domainItems.Select(i => i.ProductId).ToList();
+
+                var products = _productRepository
                     .GetByIds(productIds)
                     .ToDictionary(p => p.Id);
 
                 existing.Items = ItemSnapshotHelper.SnapshotQuotationItems(
-                    input.Items,
+                    domainItems,
                     products);
             }
 
-            if (input.CustomerId != 0 && input.CustomerId != existing.CustomerId)
+            if (request.CustomerId != 0 && request.CustomerId != existing.CustomerId)
             {
-                var customer = _customerRepository.GetById(input.CustomerId);
+                var customer = _customerRepository.GetById(request.CustomerId);
+
                 if (customer == null)
                     return new QuotationEditResponse { Result = QuotationEditResult.InvalidData };
 
                 existing.ApplyCustomerSnapshot(customer);
             }
 
-            if (input.Status != default)
-                existing.Status = input.Status;
+            if (request.Status != default)
+                existing.Status = request.Status;
 
             var validation = _validator.Validate(
                 existing,
@@ -141,7 +163,11 @@ namespace AccountingSystem.Application.Services
                 isEdit: true);
 
             if (!validation.IsValid)
-                return new QuotationEditResponse { Result = QuotationEditResult.InvalidData };
+                return new QuotationEditResponse
+                {
+                    Result = QuotationEditResult.InvalidData,
+                    Errors = validation.Errors
+                };
 
             _quotationRepository.Update(existing);
             _unitOfWork.Save();
@@ -154,38 +180,47 @@ namespace AccountingSystem.Application.Services
 
         // ================= STATUS =================
 
-        public QuotationStatusResult ChangeQuotationStatus(int id, QuotationStatus newStatus)
+        public QuotationStatusResponse ChangeQuotationStatus(int id, StatusQuotationRequest request)
         {
-            _logger.LogInformation("ChangeStatus {Id} -> {Status}", id, newStatus);
+            _logger.LogInformation("ChangeStatus {Id} -> {Status}", id, request);
 
             var quotation = _quotationRepository.GetById(id);
 
             if (quotation == null)
-                return QuotationStatusResult.NotFound;
+                return new QuotationStatusResponse { Result = QuotationStatusResult.NotFound };
 
             if (quotation.IsQuotationArchived)
-                return QuotationStatusResult.InvalidOperation;
+                return new QuotationStatusResponse { Result = QuotationStatusResult.InvalidOperation };
 
-            quotation.Status = newStatus;
+            quotation.Status = request.Status;
 
             _quotationRepository.Update(quotation);
             _unitOfWork.Save();
 
-            return QuotationStatusResult.Success;
+            return new QuotationStatusResponse { Result = QuotationStatusResult.Success };
         }
 
         // ================= READ =================
 
-        public List<Quotation> GetAllQuotations()
+        public List<QuotationResponse> GetAllQuotations()
         {
             _logger.LogInformation("GetAllQuotations");
-            return _quotationRepository.GetAll();
+
+            return _quotationRepository.GetAll()
+                .Select(q => _mapper.Map(q))
+                .ToList();
         }
 
-        public Quotation? FindQuotation(int id)
+        public QuotationResponse? FindQuotation(int id)
         {
             _logger.LogInformation("FindQuotation: {QuotationId}", id);
-            return _quotationRepository.GetById(id);
+
+            var quotation = _quotationRepository.GetById(id);
+
+            if (quotation == null)
+                return null;
+
+            return _mapper.Map(quotation);
         }
 
         // ================= ARCHIVE =================
