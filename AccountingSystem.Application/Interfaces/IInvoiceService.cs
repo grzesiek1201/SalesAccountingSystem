@@ -8,6 +8,7 @@ public interface IInvoiceService
 
     List<InvoiceResponse> GetAllInvoices();
     InvoiceResponse? FindInvoice(int id);
+    InvoiceAddResponse CreateInvoiceFromOrder(int orderId);
 
     InvoiceStatusResponse IssueInvoice(int id);
     InvoiceStatusResponse CancelInvoice(int id);

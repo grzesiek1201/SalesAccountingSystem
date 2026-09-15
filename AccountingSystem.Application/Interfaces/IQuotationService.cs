@@ -14,6 +14,8 @@ namespace AccountingSystem.Application.Interfaces
         QuotationResponse? FindQuotation(int id);
 
 
+
+
         QuotationStatusResponse SendQuotation(int id);
 
         QuotationStatusResponse AcceptQuotation(int id);

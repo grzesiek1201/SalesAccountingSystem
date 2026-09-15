@@ -20,10 +20,15 @@ namespace AccountingSystem.Application.Converters
                 Items = quotation.Items.Select(q => new OrderItem
                 {
                     ProductId = q.ProductId,
+                    ProductName = q.ProductName,
+                    ProductCode = q.ProductCode,
+                    VatRate = q.VatRate,
+                    Unit = q.Unit,
                     Quantity = q.Quantity,
                     BaseUnitPrice = q.BaseUnitPrice,
                     DiscountPercent = q.DiscountPercent,
-                    Position = q.Position
+                    Position = q.Position,
+                    Total = q.Total
                 }).ToList()
             };
         }

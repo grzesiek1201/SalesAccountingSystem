@@ -13,6 +13,8 @@ namespace AccountingSystem.Application.Interfaces
 
         OrderResponse? FindOrder(int id);
 
+        OrderAddResponse CreateOrderFromQuotation(int quotationId);
+
 
         OrderStatusResponse ConfirmOrder(int id);
 
