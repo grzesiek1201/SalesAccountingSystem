@@ -5,4 +5,5 @@
   <Project Path="AccountingSystem.Infrastructure/AccountingSystem.Infrastructure.csproj" />
   <Project Path="AccountingSystem.Seeder/AccountingSystem.Seeder.csproj" Id="47395f12-d54a-45b0-899a-e8a1aa3af0f5" />
   <Project Path="AccountingSystem.Tests/AccountingSystem.Tests.csproj" />
+  <Project Path="AccountingSystem.WebUI/AccountingSystem.WebUI.csproj" />
 </Solution>

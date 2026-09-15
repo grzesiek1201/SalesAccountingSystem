@@ -40,6 +40,19 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // =====================
+// CORS - allow frontend dev server (Vite)
+// =====================
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// =====================
 // Application services
 // =====================
 // FACTORIES
@@ -90,6 +103,8 @@ builder.Services.AddScoped<INumberSequenceRepository, NumberSequenceRepository>(
 builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
 
 var app = builder.Build();
+
+app.UseCors("AllowFrontend");
 
 // =====================
 // Middleware
