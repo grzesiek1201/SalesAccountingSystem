@@ -99,5 +99,68 @@ namespace AccountingSystem.API.Controllers
 
             return NoContent();
         }
+
+
+        // ================= CREATE INVOICE FROM ORDER =================
+
+        [HttpPost("from-order/{orderId}")]
+        public IActionResult CreateFromOrder(int orderId)
+        {
+            _logger.LogInformation(
+                "POST /api/invoices/from-order/{OrderId}",
+                orderId);
+
+            var result = _invoiceService.CreateInvoiceFromOrder(orderId);
+
+            if (!result.IsSuccess)
+            {
+                _logger.LogWarning(
+                    "Invoice creation from order failed {OrderId}: {@Errors}",
+                    orderId,
+                    result.Errors);
+
+                return BadRequest(result.Errors);
+            }
+
+            return Ok(result);
+        }
+
+        // ================= STATUS =================
+
+        [HttpPost("{id}/issue")]
+        public IActionResult Issue(int id)
+        {
+            _logger.LogInformation(
+                "POST /api/invoices/{Id}/issue",
+                id);
+
+            var result = _invoiceService.IssueInvoice(id);
+
+            if (result.Result == InvoiceOperationResult.NotFound)
+                return NotFound();
+
+            if (result.Result == InvoiceOperationResult.InvalidOperation)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/cancel")]
+        public IActionResult Cancel(int id)
+        {
+            _logger.LogInformation(
+                "POST /api/invoices/{Id}/cancel",
+                id);
+
+            var result = _invoiceService.CancelInvoice(id);
+
+            if (result.Result == InvoiceOperationResult.NotFound)
+                return NotFound();
+
+            if (result.Result == InvoiceOperationResult.InvalidOperation)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
     }
 }

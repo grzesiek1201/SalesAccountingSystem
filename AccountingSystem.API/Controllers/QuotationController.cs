@@ -97,4 +97,60 @@ public class QuotationsController : ControllerBase
 
         return NoContent();
     }
+
+    // ================= STATUS =================
+
+    [HttpPost("{id}/send")]
+    public IActionResult Send(int id)
+    {
+        _logger.LogInformation(
+            "POST /api/quotations/{Id}/send",
+            id);
+
+        var result = _quotationService.SendQuotation(id);
+
+        if (result.Result == QuotationStatusResult.NotFound)
+            return NotFound();
+
+        if (result.Result == QuotationStatusResult.InvalidOperation)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/accept")]
+    public IActionResult Accept(int id)
+    {
+        _logger.LogInformation(
+            "POST /api/quotations/{Id}/accept",
+            id);
+
+        var result = _quotationService.AcceptQuotation(id);
+
+        if (result.Result == QuotationStatusResult.NotFound)
+            return NotFound();
+
+        if (result.Result == QuotationStatusResult.InvalidOperation)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/reject")]
+    public IActionResult Reject(int id)
+    {
+        _logger.LogInformation(
+            "POST /api/quotations/{Id}/reject",
+            id);
+
+        var result = _quotationService.RejectQuotation(id);
+
+        if (result.Result == QuotationStatusResult.NotFound)
+            return NotFound();
+
+        if (result.Result == QuotationStatusResult.InvalidOperation)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }

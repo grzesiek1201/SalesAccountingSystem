@@ -99,5 +99,85 @@ namespace AccountingSystem.API.Controllers
 
             return NoContent();
         }
+
+        // ================= CREATE ORDER FROM QUOTATION =================
+
+        [HttpPost("from-quotation/{quotationId}")]
+        public IActionResult CreateFromQuotation(int quotationId)
+        {
+            _logger.LogInformation(
+                "POST /api/orders/from-quotation/{QuotationId}",
+                quotationId);
+
+            var result = _orderService.CreateOrderFromQuotation(quotationId);
+
+            if (!result.IsSuccess)
+            {
+                _logger.LogWarning(
+                    "Order creation from quotation failed {QuotationId}: {@Errors}",
+                    quotationId,
+                    result.Errors);
+
+                return BadRequest(result.Errors);
+            }
+
+            return Ok(result);
+        }
+
+        // ================= STATUS =================
+
+        [HttpPost("{id}/confirm")]
+        public IActionResult Confirm(int id)
+        {
+            _logger.LogInformation(
+                "POST /api/orders/{Id}/confirm",
+                id);
+
+            var result = _orderService.ConfirmOrder(id);
+
+            if (result.Result == OrderStatusResult.NotFound)
+                return NotFound();
+
+            if (result.Result == OrderStatusResult.InvalidOperation)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/complete")]
+        public IActionResult Complete(int id)
+        {
+            _logger.LogInformation(
+                "POST /api/orders/{Id}/complete",
+                id);
+
+            var result = _orderService.CompleteOrder(id);
+
+            if (result.Result == OrderStatusResult.NotFound)
+                return NotFound();
+
+            if (result.Result == OrderStatusResult.InvalidOperation)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/cancel")]
+        public IActionResult Cancel(int id)
+        {
+            _logger.LogInformation(
+                "POST /api/orders/{Id}/cancel",
+                id);
+
+            var result = _orderService.CancelOrder(id);
+
+            if (result.Result == OrderStatusResult.NotFound)
+                return NotFound();
+
+            if (result.Result == OrderStatusResult.InvalidOperation)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
     }
 }

@@ -144,6 +144,8 @@ namespace AccountingSystem.Application.Services
                 _numberSequenceService.GetNext(DocumentType.Invoice);
 
             invoice.DateCreated = DateTime.UtcNow;
+            invoice.IssueDate = DateTime.UtcNow;
+            invoice.DueDate = DateTime.UtcNow.AddDays(14);
 
 
             var validation =
