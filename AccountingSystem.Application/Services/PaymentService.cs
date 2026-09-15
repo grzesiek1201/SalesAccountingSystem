@@ -2,6 +2,7 @@
 using AccountingSystem.Application.DTOs.Payments;
 using AccountingSystem.Application.Interfaces;
 using AccountingSystem.Application.Repositories;
+using AccountingSystem.Application.Validation.Payments;
 using AccountingSystem.Domain.Entities;
 using AccountingSystem.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -42,19 +43,63 @@ namespace AccountingSystem.Application.Services
             var invoice = _invoiceRepository.GetById(request.InvoiceId);
 
             if (invoice == null)
-                return new PaymentAddResponse { Result = PaymentAddResult.InvoiceNotFound };
+            {
+                return new PaymentAddResponse
+                {
+                    Result = PaymentAddResult.InvoiceNotFound,
+                    Errors = new List<PaymentValidationError>
+            {
+                PaymentValidationError.InvoiceNotFound
+            }
+                };
+            }
 
             if (invoice.IsInvoiceArchived)
-                return new PaymentAddResponse { Result = PaymentAddResult.InvoiceArchived };
+            {
+                return new PaymentAddResponse
+                {
+                    Result = PaymentAddResult.InvoiceArchived,
+                    Errors = new List<PaymentValidationError>
+            {
+                PaymentValidationError.InvoiceArchived
+            }
+                };
+            }
 
             if (request.Amount <= 0)
-                return new PaymentAddResponse { Result = PaymentAddResult.InvalidAmount };
+            {
+                return new PaymentAddResponse
+                {
+                    Result = PaymentAddResult.InvalidAmount,
+                    Errors = new List<PaymentValidationError>
+            {
+                PaymentValidationError.InvalidAmount
+            }
+                };
+            }
 
             var alreadyPaid = _paymentRepository.GetTotalPaidForInvoice(request.InvoiceId);
             var remaining = invoice.TotalAmount - alreadyPaid;
 
+            _logger.LogInformation(
+                "Payment validation: InvoiceId={InvoiceId}, InvoiceTotal={InvoiceTotal}, AlreadyPaid={AlreadyPaid}, Remaining={Remaining}, RequestedAmount={RequestedAmount}",
+                request.InvoiceId,
+                invoice.TotalAmount,
+                alreadyPaid,
+                remaining,
+                request.Amount);
+
             if (request.Amount > remaining)
-                return new PaymentAddResponse { Result = PaymentAddResult.AmountExceedsRemaining };
+            {
+                return new PaymentAddResponse
+                {
+                    Result = PaymentAddResult.AmountExceedsRemaining,
+                    Errors = new List<PaymentValidationError>
+            {
+                PaymentValidationError.AmountExceedsRemaining
+            }
+                };
+            }
 
             var payment = new Payment
             {
@@ -63,9 +108,12 @@ namespace AccountingSystem.Application.Services
                 PaymentDate = DateTime.UtcNow,
             };
 
+            payment.Complete();
+
             _paymentRepository.Add(payment);
 
             var totalPaid = _paymentRepository.GetTotalPaidForInvoice(request.InvoiceId);
+
             _statusCalculator.Recalculate(invoice, totalPaid);
 
             _unitOfWork.Save();

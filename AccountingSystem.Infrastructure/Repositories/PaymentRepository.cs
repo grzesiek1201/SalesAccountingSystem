@@ -1,5 +1,6 @@
 ﻿using AccountingSystem.Application.Repositories;
 using AccountingSystem.Domain.Entities;
+using AccountingSystem.Domain.Enums;
 
 namespace AccountingSystem.Infrastructure.Repositories
 {
@@ -36,7 +37,9 @@ namespace AccountingSystem.Infrastructure.Repositories
         public decimal GetTotalPaidForInvoice(int invoiceId)
         {
             return _payments
-                .Where(p => p.InvoiceId == invoiceId)
+                .Where(p =>
+                    p.InvoiceId == invoiceId &&
+                    p.Status == PaymentStatus.Paid)
                 .Sum(p => p.Amount);
         }
 
